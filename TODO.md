@@ -1,5 +1,4 @@
 # Minimum features
-- Vulkan renderer with bindless
 - GPU driven culling
 - Raytraced shadows
 - CSM
@@ -23,3 +22,12 @@
 - SSR
 - RTAO
 - AngelScript support
+
+## DAY 1
+
+- Plug DXC and shader compiler
+- Resizing and events
+- Plug ImGui and Im3D
+- Dockspace setup for editor
+- World system
+- Cube renderer with entities from the world

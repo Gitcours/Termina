@@ -2,14 +2,14 @@
 #include "RHI/RenderContext.hpp"
 
 namespace Termina {
-    Renderer::Renderer(Window* window)
+    RendererSystem::RendererSystem(Window* window)
         : m_Window(window)
     {
         m_Device = RendererDevice::Create();
         m_Surface = m_Device->CreateSurface(window);
     }
 
-    Renderer::~Renderer()
+    RendererSystem::~RendererSystem()
     {
         m_Device->WaitIdle();
 
@@ -17,7 +17,7 @@ namespace Termina {
         delete m_Device;
     }
 
-    void Renderer::Render()
+    void RendererSystem::Render(float deltaTime)
     {
         uint32 frameIndex = m_Surface->GetFrameIndex();
 

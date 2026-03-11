@@ -1,14 +1,8 @@
-#include <Termina/Core/Window.hpp>
-#include <Termina/Renderer/Renderer.hpp>
+#include "RuntimeApplication.hpp"
 
 int main()
 {
-    Termina::Window window(1280, 720, "Hi");
-    Termina::Renderer renderer(&window);
-    while (window.IsOpen()) {
-        window.Update();
-
-        renderer.Render();
-    }
+    RuntimeApplication app;
+    app.Run();
     return 0;
 }

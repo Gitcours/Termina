@@ -1,16 +1,23 @@
 #pragma once
 
+#include <Termina/Core/System.h>
 #include <Termina/Core/Window.hpp>
 #include <Termina/RHI/Device.hpp>
 
 namespace Termina {
-    class Renderer
+    class RendererSystem : public ISystem
     {
     public:
-        Renderer(Window* window);
-        ~Renderer();
+        RendererSystem(Window* window);
+        ~RendererSystem();
 
-        void Render();
+        void Render(float deltaTime) override;
+
+        UpdateFlags GetUpdateFlags() const override {
+            return UpdateFlags::RenderUpdateDuringEditor | UpdateFlags::UpdateDuringEditor;
+        }
+        std::string GetName() const override { return "Renderer System"; }
+        int GetPriority() const override { return 0; }
     private:
         Window* m_Window;
 	    RendererDevice* m_Device = nullptr;
