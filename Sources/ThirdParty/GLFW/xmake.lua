@@ -4,6 +4,7 @@
 target("GLFW")
     set_kind("static")
     set_languages("c99")
+    add_deps("Vulkan")
 
     -- Public include directory (glfw3.h, glfw3native.h live here)
     add_includedirs(".", {public = true})
@@ -100,39 +101,13 @@ target("GLFW")
     -- Linux / Unix — X11 backend
     -- -------------------------------------------------------------------------
     if is_plat("linux") then
-        add_defines("_GLFW_X11")
+        add_defines("_GLFW_WAYLAND")
         add_files(
-            "x11_init.c",
-            "x11_monitor.c",
-            "x11_window.c",
-            "xkb_unicode.c",
-            "glx_context.c"
+            "wl_init.c",
+            "wl_monitor.c",
+            "wl_window.c"
         )
-        -- X11 and related extension libraries
-        add_syslinks("X11", "Xrandr", "Xinerama", "Xcursor", "Xi", "Xext")
-    end
-
-    -- -------------------------------------------------------------------------
-    -- Linux / Unix — Wayland backend
-    -- (enabled via: xmake f --wayland=y)
-    -- -------------------------------------------------------------------------
-    if is_plat("linux") then
-        -- Toggle Wayland with `xmake f --wayland=true`
-        option("wayland")
-            set_default(false)
-            set_showmenu(true)
-            set_description("Build GLFW with Wayland backend")
-        option_end()
-
-        if has_config("wayland") then
-            add_defines("_GLFW_WAYLAND")
-            add_files(
-                "wl_init.c",
-                "wl_monitor.c",
-                "wl_window.c"
-            )
-            add_packages("wayland-client", "wayland-cursor", "wayland-egl", "xkbcommon")
-        end
+        add_packages("wayland-client", "wayland-cursor", "wayland-egl", "xkbcommon")
     end
 
     -- -------------------------------------------------------------------------

@@ -1,13 +1,20 @@
 #include "Window.hpp"
 #include "Assert.hpp"
+#include "Logger.hpp"
+#include "glfw3.h"
 
 namespace Termina {
     Window::Window(int width, int height, const char* title)
+        : m_Width(width), m_Height(height)
     {
         TN_ASSERT(glfwInit(), "Failed to initialize GLFW");
 
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
         m_Window = glfwCreateWindow(width, height, title, nullptr, nullptr);
         TN_ASSERT(m_Window, "Failed to create GLFW window");
+
+        TN_INFO("Created window of size (%d, %d)", width, height);
     }
 
     Window::~Window()
@@ -24,5 +31,7 @@ namespace Termina {
     void Window::Update()
     {
         glfwPollEvents();
+
+        glfwGetWindowSize(m_Window, &m_Width, &m_Height);
     }
 }
