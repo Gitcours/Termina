@@ -2,6 +2,8 @@
 
 #include "Editor/Panel.hpp"
 
+namespace Termina { class Actor; }
+
 class WorldHierarchyPanel : public Panel
 {
 public:
@@ -9,4 +11,7 @@ public:
         : Panel("World Hierarchy", context) {}
 
     void OnImGuiRender() override;
+
+private:
+    void DrawActorNode(Termina::Actor* actor);
 };

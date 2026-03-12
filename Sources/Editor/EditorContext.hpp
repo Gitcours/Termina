@@ -1,6 +1,8 @@
 #pragma once
 
+namespace Termina { class Actor; }
+
 struct EditorContext
 {
-    int SelectedEntity = -1; // placeholder until ECS is in place
+    Termina::Actor* SelectedActor = nullptr;
 };
