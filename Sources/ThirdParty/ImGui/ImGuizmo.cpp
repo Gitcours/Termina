@@ -816,7 +816,6 @@ namespace IMGUIZMO_NAMESPACE
       trans.TransformPoint(worldPos, mat);
       trans *= 0.5f / trans.w;
       trans += makeVect(0.5f, 0.5f);
-      trans.y = 1.f - trans.y;
       trans.x *= size.x;
       trans.y *= size.y;
       trans.x += position.x;
@@ -832,7 +831,7 @@ namespace IMGUIZMO_NAMESPACE
       mViewProjInverse.Inverse(gContext.mViewMat * gContext.mProjectionMat);
 
       const float mox = ((io.MousePos.x - position.x) / size.x) * 2.f - 1.f;
-      const float moy = (1.f - ((io.MousePos.y - position.y) / size.y)) * 2.f - 1.f;
+      const float moy = (((io.MousePos.y - position.y) / size.y)) * 2.f - 1.f;
 
       const float zNear = gContext.mReversed ? (1.f - FLT_EPSILON) : 0.f;
       const float zFar = gContext.mReversed ? 0.f : (1.f - FLT_EPSILON);
@@ -1067,6 +1066,7 @@ namespace IMGUIZMO_NAMESPACE
       gContext.mMode = mode;
       gContext.mViewMat = *(matrix_t*)view;
       gContext.mProjectionMat = *(matrix_t*)projection;
+      gContext.mProjectionMat.component[1] = -gContext.mProjectionMat.component[1];
       gContext.mbMouseOver = IsHoveringWindow();
 
       gContext.mModelLocal = *(matrix_t*)matrix;

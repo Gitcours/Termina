@@ -61,6 +61,8 @@ namespace Termina {
         // Lifecycle
         void OnPreUpdate(float deltaTime) override;
         void OnUpdate(float deltaTime) override;
+        void OnAttach(Actor* newParent) override;
+        void OnDetach(Actor* oldParent) override;
         void Inspect() override;
 
         // Call this after manually modifying transform properties via reflection

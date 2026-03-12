@@ -10,7 +10,8 @@
 #include "GPUUploader.h"
 #include "ResourceViewCache.h"
 #include "SamplerCache.h"
-#include "Termina/Renderer/PassIO.hpp"
+#include "PassIO.hpp"
+#include "Camera.hpp"
 
 namespace Termina {
     using RenderCallback = std::function<void(RendererDevice*, RendererSurface*, float)>;
@@ -22,11 +23,12 @@ namespace Termina {
         ~RendererSystem();
 
         void PreUpdate(float deltaTime) override;
-
         void PreRender(float deltaTime) override;
         void Render(float deltaTime) override;
 
         void RegisterRenderCallback(const RenderCallback& callback) { m_RenderCallbacks.push_back(callback); }
+        void SetCurrentCamera(const Camera& camera) { m_CurrentCamera = camera; }
+        const Camera& GetCurrentCamera() const { return m_CurrentCamera; }
 
         UpdateFlags GetUpdateFlags() const override {
             return UpdateFlags::RenderUpdateDuringEditor | UpdateFlags::UpdateDuringEditor;
@@ -48,6 +50,8 @@ namespace Termina {
         Window* m_Window;
 	    RendererDevice* m_Device = nullptr;
 	    RendererSurface* m_Surface = nullptr;
+
+        Camera m_CurrentCamera;
 
         int m_CurrentWidth = 0;
         int m_CurrentHeight = 0;

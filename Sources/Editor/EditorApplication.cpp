@@ -8,15 +8,18 @@
 #include <Termina/Renderer/Renderer.hpp>
 #include <Termina/Renderer/UIUtils.hpp>
 #include <Termina/Shader/ShaderManager.hpp>
+#include <Termina/Core/Logger.hpp>
 
 #include "ImGui/imgui.h"
 #include "Termina/Audio/AudioSystem.hpp"
+#include "Termina/Input/InputSystem.hpp"
 #include "Termina/World/ComponentRegistry.hpp"
 #include "Termina/World/WorldSystem.hpp"
 
 EditorApplication::EditorApplication()
     : Application("Editor")
 {
+    m_SystemManager.AddSystem<Termina::InputSystem>(m_Window->GetHandle());
     m_SystemManager.AddSystem<Termina::WorldSystem>();
     m_SystemManager.AddSystem<Termina::RendererSystem>(m_Window);
     m_SystemManager.AddSystem<Termina::ShaderManager>();
@@ -36,10 +39,15 @@ EditorApplication::~EditorApplication()
 
 void EditorApplication::OnUpdate(float dt)
 {
+    auto* renderer = GetSystem<Termina::RendererSystem>();
+    float w = static_cast<float>(m_Window->GetWidth());
+    float h = static_cast<float>(m_Window->GetHeight());
+    m_Camera.Update(dt, w, h);
+    renderer->SetCurrentCamera(m_Camera);
+
     RenderDockspace();
 
-    for (auto& panel : m_Panels)
-    {
+    for (auto& panel : m_Panels) {
         if (panel->IsOpen())
             panel->OnImGuiRender();
     }

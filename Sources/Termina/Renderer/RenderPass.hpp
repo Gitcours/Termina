@@ -6,6 +6,7 @@
 
 #include "GPUBumpAllocator.h"
 #include "GPUUploader.h"
+#include "Camera.hpp"
 #include "ResourceViewCache.h"
 #include "SamplerCache.h"
 #include "PassIO.hpp"
@@ -16,12 +17,15 @@ namespace Termina {
         RendererDevice* Device;
         RendererSurface* Surface;
         RenderContext* Ctx;
+        
         GPUUploader* Uploader;
         GPUBumpAllocator* Allocator;
         ResourceViewCache* ViewCache;
         SamplerCache* SampCache;
         PassIO* IO;
+
         World* CurrentWorld;
+        Camera CurrentCamera;
 
         uint FrameIndex;
         int32 Width;

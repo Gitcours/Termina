@@ -104,12 +104,15 @@ namespace Termina {
                 .Device = m_Device,
                 .Surface = m_Surface,
                 .Ctx = context,
+                
                 .Uploader = m_GPUUploader,
                 .Allocator = m_GPUAllocator,
                 .ViewCache = m_ResourceViewCache,
                 .SampCache = m_SamplerCache,
                 .IO = &m_PassIO,
+
                 .CurrentWorld = Application::GetSystem<WorldSystem>()->GetCurrentWorld(),
+                .CurrentCamera = m_CurrentCamera,
 
                 .FrameIndex = frameIndex,
                 .Width = pixelWidth,

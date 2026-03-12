@@ -4,6 +4,7 @@
 #include <Termina/Audio/AudioSource.hpp>
 
 #include "EditorContext.hpp"
+#include "EditorCamera.hpp"
 #include "Panel.hpp"
 
 #include <memory>
@@ -27,5 +28,6 @@ private:
     void RenderDockspace();
 
     EditorContext m_Context;
+    EditorCamera  m_Camera;
     std::vector<std::unique_ptr<Panel>> m_Panels;
 };

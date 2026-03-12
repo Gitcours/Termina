@@ -25,22 +25,31 @@
 
 ## TODO
 
-- PassIO, editor renders to viewport, runtime renders to backbuffer
-- Simple HDR forward pass + tonemap via PassIO + debug renderer
-- Cube renderer with entities from the world
-- Asset system (ref counting/caching)
-- Input system (keyboard, mouse, gamepad)
-- Audio system (audio source, listener, simple playback)
-- Rendering 3D models (static GLTF)
-- Physics system (implement different types of colliders)
+### Thursday
 - Scripting system (how tho)
+- Asset system (ref counting/caching)
+
+### Friday
+- Rendering 3D models (static GLTF) + mesh components
+- 3D audio + audio components
+- Simple HDR forward pass + tonemap via PassIO + debug renderer
+- Physics system (implement different types of colliders)
 - Project system (simple)
-- Vulkan TLAS/BLAS/AS Build
-- GPU driven frustum cull
-- RT shadows
-- CSM
-- Shadow atlas
-- IBL
-- PostFX (DOF, Bloom, TAA)
+
+### Saturday
+- Microfacet BRDF
 - Skybox
+- IBL
+- CSM
+- TAA
+- Vulkan TLAS/BLAS/AS Build
+- RT shadows
+- Runtime renders to backbuffer
+
+## Sunday
+- GPU driven frustum cull
+- Shadow atlas
+- DOF
+- Bloom
 - Batched 2D sprite renderer
+- Text renderer

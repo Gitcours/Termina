@@ -247,6 +247,36 @@ namespace Termina {
         Component::OnUpdate(deltaTime);
     }
 
+    void Transform::OnDetach(Actor* oldParent)
+    {
+        if (!oldParent || !oldParent->HasComponent<Transform>())
+            return;
+
+        glm::mat4 worldMatrix = oldParent->GetComponent<Transform>().GetWorldMatrix() * GetLocalMatrix();
+
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::quat rotation;
+        glm::decompose(worldMatrix, m_Scale, rotation, m_Position, skew, perspective);
+        m_Rotation = glm::conjugate(rotation);
+        MarkDirty();
+    }
+
+    void Transform::OnAttach(Actor* newParent)
+    {
+        if (!newParent || !newParent->HasComponent<Transform>())
+            return;
+
+        glm::mat4 localMatrix = newParent->GetComponent<Transform>().GetInverseWorldMatrix() * GetLocalMatrix();
+
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::quat rotation;
+        glm::decompose(localMatrix, m_Scale, rotation, m_Position, skew, perspective);
+        m_Rotation = glm::conjugate(rotation);
+        MarkDirty();
+    }
+
     void Transform::Inspect()
     {
         const float resetButtonWidth = ImGui::CalcTextSize("R").x + ImGui::GetStyle().FramePadding.x * 2.0f;

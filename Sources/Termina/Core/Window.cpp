@@ -34,8 +34,6 @@ namespace Termina {
 
     void Window::Update()
     {
-        glfwPollEvents();
-
         glfwGetWindowSize(m_Window, &m_Width, &m_Height);
         glfwGetFramebufferSize(m_Window, &m_PixelWidth, &m_PixelHeight);
     }
