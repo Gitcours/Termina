@@ -1,7 +1,7 @@
 -- xmake.lua
 
 target("Termina")
-    set_kind("static")
+    set_kind("shared")
     set_group("Termina")
 
     add_files("**.cpp")

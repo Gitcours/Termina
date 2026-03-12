@@ -21,6 +21,7 @@ namespace Termina {
 
     void Actor::OnInit()
     {
+        m_Initialized = true;
         for (Component* component : m_Components) component->OnInit();
     }
 
@@ -43,92 +44,65 @@ namespace Termina {
 
     void Actor::OnPreUpdate(float deltaTime)
     {
-        for (Component* component : m_Components) {
-            if (component->IsActive()) {
-                if (!m_InPlayMode && (Any(component->GetUpdateFlags(), UpdateFlags::UpdateDuringEditor))) component->OnPreUpdate(deltaTime);
-                else component->OnPreUpdate(deltaTime);
-            }
-        }
+        for (Component* component : m_Components)
+            if (component->IsActive() && (m_InPlayMode || Any(component->GetUpdateFlags(), UpdateFlags::UpdateDuringEditor)))
+                component->OnPreUpdate(deltaTime);
     }
 
     void Actor::OnUpdate(float deltaTime)
     {
-        for (Component* component : m_Components) {
-            if (component->IsActive()) {
-                if (!m_InPlayMode && (Any(component->GetUpdateFlags(), UpdateFlags::UpdateDuringEditor))) component->OnUpdate(deltaTime);
-                else component->OnUpdate(deltaTime);
-            }
-        }
+        for (Component* component : m_Components)
+            if (component->IsActive() && (m_InPlayMode || Any(component->GetUpdateFlags(), UpdateFlags::UpdateDuringEditor)))
+                component->OnUpdate(deltaTime);
     }
 
     void Actor::OnPostUpdate(float deltaTime)
     {
-        for (Component* component : m_Components) {
-            if (component->IsActive()) {
-                if (!m_InPlayMode && (Any(component->GetUpdateFlags(), UpdateFlags::UpdateDuringEditor))) component->OnPostUpdate(deltaTime);
-                else component->OnPostUpdate(deltaTime);
-            }
-        }
+        for (Component* component : m_Components)
+            if (component->IsActive() && (m_InPlayMode || Any(component->GetUpdateFlags(), UpdateFlags::UpdateDuringEditor)))
+                component->OnPostUpdate(deltaTime);
     }
 
     void Actor::OnPrePhysics(float deltaTime)
     {
-        for (Component* component : m_Components) {
-            if (component->IsActive()) {
-                if (!m_InPlayMode && (Any(component->GetUpdateFlags(), UpdateFlags::PhysicsUpdateDuringEditor))) component->OnPrePhysics(deltaTime);
-                else component->OnPrePhysics(deltaTime);
-            }
-        }
+        for (Component* component : m_Components)
+            if (component->IsActive() && (m_InPlayMode || Any(component->GetUpdateFlags(), UpdateFlags::PhysicsUpdateDuringEditor)))
+                component->OnPrePhysics(deltaTime);
     }
 
     void Actor::OnPhysics(float deltaTime)
     {
-        for (Component* component : m_Components) {
-            if (component->IsActive()) {
-                if (!m_InPlayMode && (Any(component->GetUpdateFlags(), UpdateFlags::PhysicsUpdateDuringEditor))) component->OnPhysics(deltaTime);
-                else component->OnPhysics(deltaTime);
-            }
-        }
+        for (Component* component : m_Components)
+            if (component->IsActive() && (m_InPlayMode || Any(component->GetUpdateFlags(), UpdateFlags::PhysicsUpdateDuringEditor)))
+                component->OnPhysics(deltaTime);
     }
 
     void Actor::OnPostPhysics(float deltaTime)
     {
-        for (Component* component : m_Components) {
-            if (component->IsActive()) {
-                if (!m_InPlayMode && (Any(component->GetUpdateFlags(), UpdateFlags::PhysicsUpdateDuringEditor))) component->OnPostPhysics(deltaTime);
-                else component->OnPostPhysics(deltaTime);
-            }
-        }
+        for (Component* component : m_Components)
+            if (component->IsActive() && (m_InPlayMode || Any(component->GetUpdateFlags(), UpdateFlags::PhysicsUpdateDuringEditor)))
+                component->OnPostPhysics(deltaTime);
     }
 
     void Actor::OnPreRender(float deltaTime)
     {
-        for (Component* component : m_Components) {
-            if (component->IsActive()) {
-                if (!m_InPlayMode && (Any(component->GetUpdateFlags(), UpdateFlags::RenderUpdateDuringEditor))) component->OnPreRender(deltaTime);
-                else component->OnPreRender(deltaTime);
-            }
-        }
+        for (Component* component : m_Components)
+            if (component->IsActive() && (m_InPlayMode || Any(component->GetUpdateFlags(), UpdateFlags::RenderUpdateDuringEditor)))
+                component->OnPreRender(deltaTime);
     }
 
     void Actor::OnRender(float deltaTime)
     {
-        for (Component* component : m_Components) {
-            if (component->IsActive()) {
-                if (!m_InPlayMode && (Any(component->GetUpdateFlags(), UpdateFlags::RenderUpdateDuringEditor))) component->OnRender(deltaTime);
-                else component->OnRender(deltaTime);
-            }
-        }
+        for (Component* component : m_Components)
+            if (component->IsActive() && (m_InPlayMode || Any(component->GetUpdateFlags(), UpdateFlags::RenderUpdateDuringEditor)))
+                component->OnRender(deltaTime);
     }
 
     void Actor::OnPostRender(float deltaTime)
     {
-        for (Component* component : m_Components) {
-            if (component->IsActive()) {
-                if (!m_InPlayMode && (Any(component->GetUpdateFlags(), UpdateFlags::RenderUpdateDuringEditor))) component->OnPostRender(deltaTime);
-                else component->OnPostRender(deltaTime);
-            }
-        }
+        for (Component* component : m_Components)
+            if (component->IsActive() && (m_InPlayMode || Any(component->GetUpdateFlags(), UpdateFlags::RenderUpdateDuringEditor)))
+                component->OnPostRender(deltaTime);
     }
 
     void Actor::OnAttach(Actor* newParent)
@@ -183,6 +157,8 @@ namespace Termina {
         comp->SetOwner(this);
         m_ComponentMap[idx] = comp;
         m_Components.push_back(comp);
+        if (m_Initialized)
+            comp->OnInit();
     }
 
     void Actor::RemoveComponentRaw(Component* comp)

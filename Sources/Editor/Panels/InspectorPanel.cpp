@@ -6,6 +6,8 @@
 #include <Termina/World/ComponentRegistry.hpp>
 
 #include <cstring>
+#include <typeindex>
+#include <unordered_set>
 
 void InspectorPanel::OnImGuiRender()
 {
@@ -51,6 +53,36 @@ void InspectorPanel::OnImGuiRender()
         } else
             Termina::UIUtils::PopStylized();
         ImGui::PopID();
+    }
+
+    ImGui::Separator();
+
+    // Collect types already on the actor
+    std::unordered_set<std::type_index> existing;
+    for (auto* c : actor->GetAllComponents())
+        existing.insert(typeid(*c));
+
+    Termina::UIUtils::PushStylized();
+    if (Termina::UIUtils::Button("Add Component"))
+        ImGui::OpenPopup("##AddComponent");
+    Termina::UIUtils::PopStylized();
+
+    if (ImGui::BeginPopup("##AddComponent")) {
+        std::type_index selectedType = typeid(void);
+        Termina::ComponentRegistry::Get().ForEach([&](const Termina::ComponentRegistry::Entry& entry) {
+            if (existing.count(entry.Type))
+                return true;
+            if (ImGui::MenuItem(entry.Name.c_str()))
+                selectedType = entry.Type;
+            return true;
+        });
+        ImGui::EndPopup();
+
+        if (selectedType != typeid(void)) {
+            auto* comp = Termina::ComponentRegistry::Get().CreateByType(selectedType, actor);
+            if (comp)
+                actor->AddComponentRaw(comp);
+        }
     }
 
     Termina::UIUtils::EndEditorWindow();

@@ -13,18 +13,8 @@ namespace Termina {
     public:
         ~World();
 
-        template<typename T = Actor, typename... Args>
-        T* SpawnActor(Args&&... args)
-        {
-            static_assert(std::is_base_of_v<Actor, T>);
-            auto actor = std::make_shared<T>(this, std::forward<Args>(args)...);
-            T* ptr = actor.get();
-            m_Actors.push_back(std::move(actor));
-            ptr->template AddComponent<Transform>();
-            ptr->OnInit();
-            return ptr;
-        }
-
+        Actor* SpawnActor();
+        Actor* SpawnActorFrom(Actor* actor);
         void DestroyActor(Actor* actor);
         Actor* GetActorById(uint64 id);
         Actor* GetActorByName(const std::string& name);

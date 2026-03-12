@@ -116,5 +116,6 @@ namespace Termina {
         uint64 m_ID = NewID();
 
         bool m_InPlayMode = false;
+        bool m_Initialized = false;
     };
 }

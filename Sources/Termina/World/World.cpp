@@ -15,6 +15,58 @@ namespace Termina {
         Clear();
     }
 
+    Actor* World::SpawnActor()
+    {
+        auto actor = std::make_shared<Actor>(this);
+        Actor* ptr = actor.get();
+        m_Actors.push_back(std::move(actor));
+        ptr->AddComponent<Transform>();
+        ptr->OnInit();
+        return ptr;
+    }
+
+    Actor* World::SpawnActorFrom(Actor* actor)
+    {
+        Actor* newActor = SpawnActor();
+        
+        nlohmann::json temp;
+        for (Component* comp : actor->GetAllComponents()) {
+            std::string typeName = ComponentRegistry::Get().GetNameForType(typeid(*comp));
+            if (typeName.empty()) continue; // unregistered — skip
+
+            nlohmann::json compJson;
+            compJson["type"]   = typeName;
+            compJson["active"] = comp->IsActive();
+            nlohmann::json data = nlohmann::json::object();
+            comp->Serialize(data);
+            compJson["data"] = std::move(data);
+
+            temp.push_back(std::move(compJson));
+        }
+        for (const auto& compJson : temp) {
+            std::string type = compJson.value("type", "");
+            bool compActive  = compJson.value("active", true);
+            const auto& data = compJson.contains("data") ? compJson["data"] : nlohmann::json::object();
+
+            if (type == "Transform") {
+                // Already added by SpawnActor — just deserialize its data.
+                newActor->GetComponent<Transform>().Deserialize(data);
+                newActor->GetComponent<Transform>().SetActive(compActive);
+                continue;
+            }
+
+            Component* comp = ComponentRegistry::Get().CreateByName(type, newActor);
+            if (!comp) {
+                TN_WARN("Unknown component type '%s' — skipping.", type.c_str());
+                continue;
+            }
+            comp->SetActive(compActive);
+            comp->Deserialize(data);
+            newActor->AddComponentRaw(comp);
+        }
+        return newActor;
+    }
+
     void World::DestroyActor(Actor* actor)
     {
         if (!actor) return;

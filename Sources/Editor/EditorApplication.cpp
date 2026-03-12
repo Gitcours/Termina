@@ -13,6 +13,8 @@
 #include "ImGui/imgui.h"
 #include "Termina/Audio/AudioSystem.hpp"
 #include "Termina/Input/InputSystem.hpp"
+#include "Termina/Platform/LaunchProcess.hpp"
+#include "Termina/Scripting/ScriptSystem.hpp"
 #include "Termina/World/ComponentRegistry.hpp"
 #include "Termina/World/WorldSystem.hpp"
 
@@ -24,6 +26,7 @@ EditorApplication::EditorApplication()
     m_SystemManager.AddSystem<Termina::RendererSystem>(m_Window);
     m_SystemManager.AddSystem<Termina::ShaderManager>();
     m_SystemManager.AddSystem<Termina::AudioSystem>();
+    m_SystemManager.AddSystem<Termina::ScriptSystem>();
 
     RegisterPanel<ViewportPanel>();
     RegisterPanel<WorldHierarchyPanel>();
@@ -94,6 +97,15 @@ void EditorApplication::RenderDockspace()
                 if (Termina::UIUtils::MenuItem(panel->GetName().c_str(), nullptr, open))
                     panel->SetOpen(!open);
             }
+            Termina::UIUtils::EndMenu();
+        }
+
+        if (Termina::UIUtils::BeginMenu("Scripting"))
+        {
+            if (Termina::UIUtils::MenuItem("Compile", "F5"))
+                GetSystem<Termina::ScriptSystem>()->Compile();
+            if (Termina::UIUtils::MenuItem("Recompile", "Ctrl+F5"))
+                GetSystem<Termina::ScriptSystem>()->Recompile();
             Termina::UIUtils::EndMenu();
         }
 
