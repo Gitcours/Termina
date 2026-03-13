@@ -26,7 +26,6 @@
 ## TODO
 
 ### Friday
-- UI utils to drag/drop entities and assets into the inspector
 - Rendering 3D models (static GLTF) + mesh component
 - Material asset
 - Simple HDR forward pass + tonemap via PassIO + debug renderer

@@ -56,5 +56,8 @@ namespace Termina {
 
         std::unique_ptr<World> m_CurrentWorld;
         bool m_IsPlaying = false;
+
+        std::string m_PrePlayPath;    // world path before entering play mode
+        std::string m_PlaySnapshot;   // temp file used to snapshot world state on play
     };
 }

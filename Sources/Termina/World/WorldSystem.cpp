@@ -1,6 +1,7 @@
 #include "WorldSystem.hpp"
 
 #include <stdexcept>
+#include <filesystem>
 
 #include "ComponentRegistry.hpp"
 #include "Components/Transform.hpp"
@@ -82,6 +83,12 @@ namespace Termina {
     {
         if (!m_CurrentWorld || m_IsPlaying)
             return;
+
+        // Snapshot the world state so Stop() can restore it.
+        m_PrePlayPath = m_CurrentWorld->GetCurrentPath();
+        m_PlaySnapshot = (std::filesystem::temp_directory_path() / "__termina_play_snapshot__.trw").string();
+        SaveWorld(m_PlaySnapshot);
+
         m_IsPlaying = true;
         m_CurrentWorld->OnPlay();
     }
@@ -92,6 +99,19 @@ namespace Termina {
             return;
         m_CurrentWorld->OnStop();
         m_IsPlaying = false;
+
+        // Restore the world to its pre-play state.
+        if (!m_PlaySnapshot.empty() && std::filesystem::exists(m_PlaySnapshot))
+        {
+            auto restored = std::make_unique<World>();
+            restored->LoadFromFile(m_PlaySnapshot);
+            restored->SetCurrentPath(m_PrePlayPath);
+            m_CurrentWorld->OnShutdown();
+            m_CurrentWorld = std::move(restored);
+            m_CurrentWorld->OnInit();
+            std::filesystem::remove(m_PlaySnapshot);
+            m_PlaySnapshot.clear();
+        }
     }
 
     // ---------------------------------------------------------------------------

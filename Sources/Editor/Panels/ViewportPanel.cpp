@@ -29,8 +29,10 @@ void ViewportPanel::OnImGuiRender()
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 10, 5 });
     Termina::UIUtils::PushStylized();
     if (worldSystem->IsPlaying()) {
-        if (Termina::UIUtils::Button("Stop"))
+        if (Termina::UIUtils::Button("Stop")) {
             worldSystem->Stop();
+            m_Context.ItemToInspect = nullptr;
+        }
     } else {
         if (Termina::UIUtils::Button("Play"))
             worldSystem->Play();

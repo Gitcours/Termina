@@ -55,6 +55,7 @@ namespace Termina {
         void SetName(const std::string& name) { m_Name = name; }
 
         const std::string& GetCurrentPath() const { return m_CurrentPath; }
+        void SetCurrentPath(const std::string& path) { m_CurrentPath = path; }
 
         void SetMainCamera(Actor* camera) { m_MainCamera = camera; }
         Camera GetMainCamera() const;
