@@ -15,6 +15,8 @@ namespace Termina {
         ma_device& GetDevice() { return m_Device; }
         ma_engine& GetEngine() { return m_Engine; }
 
+        void Update(float deltaTime) override;
+
         /// Sets the volume of the audio engine.
         void SetVolume(float volume) { ma_engine_set_volume(&m_Engine, volume); }
 

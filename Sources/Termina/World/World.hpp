@@ -58,9 +58,14 @@ namespace Termina {
 
         void SetMainCamera(Actor* camera) { m_MainCamera = camera; }
         Camera GetMainCamera() const;
+
+        void SetAudioListener(Actor* listener) { m_AudioListener = listener; }
+        Actor* GetAudioListener() const { return m_AudioListener; }
     private:
         std::vector<std::shared_ptr<Actor>> m_Actors;
+
         Actor* m_MainCamera = nullptr;
+        Actor* m_AudioListener = nullptr;
 
         std::string m_CurrentPath = "";
         std::string m_Name = "World";

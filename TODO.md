@@ -27,30 +27,33 @@
 
 ### Friday
 - 3D audio + audio components
+- UI utils to drag/drop entities and assets into the inspector
 - Rendering 3D models (static GLTF) + mesh component
 - Material asset
 - Simple HDR forward pass + tonemap via PassIO + debug renderer
 - Physics system (implement different types of colliders)
 
 ### Saturday
+- Save/Load dialog for scenes
+- Asset compression and packing on export
+- Project system
+- Runtime renders to backbuffer
+- Prefabs
+
+## Sunday
+- Bindless scene buffer setup
 - Microfacet BRDF
 - Skybox
 - IBL
 - CSM
 - TAA
 - Bloom
-- Runtime renders to backbuffer
-
-## Sunday
-- Prefabs
-- Asset compression and packing on export
-- Project system
+- Shadow atlas
 
 ## After
-- Vulkan and Metal TLAS/BLAS/AS Build
+- Vulkan and Metal TLAS/BLAS Build
 - RT shadows
 - GPU driven frustum cull
-- Shadow atlas
 - DOF
 - Batched 2D sprite renderer
 - Text renderer

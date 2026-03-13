@@ -1,6 +1,14 @@
 #include "AudioSystem.hpp"
+#include "Audio/AudioSource.hpp"
+#include "World/WorldSystem.hpp"
+
+#include "Audio/Components/AudioListenerComponent.hpp"
+#include "Audio/Components/AudioSourceComponent.hpp"
 
 #include <Termina/Core/Logger.hpp>
+#include <Termina/Core/Application.hpp>
+#include <Termina/World/World.hpp>
+#include <Termina/World/ComponentRegistry.hpp>
 
 namespace Termina {
     void DataCallback(ma_device *pDevice, void *output, const void *input, ma_uint32 frameCount)
@@ -49,13 +57,34 @@ namespace Termina {
         ma_device_uninit(&m_Device);
     }
 
+    void AudioSystem::Update(float deltaTime)
+    {
+        WorldSystem* worldSystem = Application::GetSystem<WorldSystem>();
+        if (worldSystem) {
+            Actor* listener = worldSystem->GetCurrentWorld()->GetAudioListener();
+            if (listener) {
+                AudioListenerComponent& audioListener = listener->GetComponent<AudioListenerComponent>();
+                Transform transform = listener->GetComponent<Transform>();
+
+                ma_engine_listener_set_enabled(&m_Engine, 0, true);
+                ma_engine_listener_set_position(&m_Engine, 0, transform.GetPosition().x, transform.GetPosition().y, transform.GetPosition().z);
+                ma_engine_listener_set_direction(&m_Engine, 0, transform.GetForward().x, transform.GetForward().y, transform.GetForward().z);
+                ma_engine_listener_set_velocity(&m_Engine, 0, audioListener.GetVelocity().x, audioListener.GetVelocity().y, audioListener.GetVelocity().z);
+            } else {
+                ma_engine_listener_set_enabled(&m_Engine, 0, false);
+            }
+        }
+    }
+
     void AudioSystem::RegisterComponents()
     {
-        // TODO
+        ComponentRegistry::Get().Register<AudioSourceComponent>("Audio Source Component");
+        ComponentRegistry::Get().Register<AudioListenerComponent>("Audio Listener Component");
     }
 
     void AudioSystem::UnregisterComponents()
     {
-        // TODO
+        ComponentRegistry::Get().Unregister<AudioSourceComponent>();
+        ComponentRegistry::Get().Unregister<AudioListenerComponent>();
     }
 }

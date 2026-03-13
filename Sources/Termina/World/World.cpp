@@ -365,7 +365,7 @@ namespace Termina {
             TN_ERROR("Could not open '%s' for writing.", m_CurrentPath.c_str());
             return;
         }
-        file << root.dump(4);
+        file << root.dump();
     }
 
     Camera World::GetMainCamera() const
