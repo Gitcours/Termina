@@ -19,6 +19,7 @@ namespace Termina {
             if (worldSystem->IsPlaying())
                 worldSystem->GetCurrentWorld()->OnStop();
             worldSystem->GetCurrentWorld()->OnShutdown();
+            worldSystem->GetCurrentWorld()->Clear();
         }
         m_SystemManager.Clean();
         delete m_Window;

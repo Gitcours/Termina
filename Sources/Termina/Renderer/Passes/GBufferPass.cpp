@@ -73,7 +73,11 @@ namespace Termina {
             .AddColorAttachmentFormat(TextureFormat::RGBA16_FLOAT)  // emissive
             .AddColorAttachmentFormat(TextureFormat::RGBA16_FLOAT)  // motion vectors
             .SetDepthAttachmentFormat(TextureFormat::D32_FLOAT)
+#if defined(TRMN_MACOS)
             .SetCullMode(PipelineCullMode::FRONT)
+#else
+            .SetCullMode(PipelineCullMode::BACK)
+#endif
             .SetDepthCompareOp(PipelineCompareOp::LESS)
             .SetDepthReadEnabled(true)
             .SetDepthWriteEnabled(true)

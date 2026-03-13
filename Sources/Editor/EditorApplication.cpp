@@ -46,6 +46,9 @@ EditorApplication::EditorApplication()
 
 EditorApplication::~EditorApplication()
 {
+    m_Context.ItemToInspect = nullptr;
+    m_Context.ContentViewer = nullptr;
+    m_Panels.clear();
 }
 
 void EditorApplication::OnUpdate(float dt)

@@ -20,7 +20,5 @@ namespace Termina {
         void End() override;
     private:
         VulkanRenderContext* m_ParentCtx;
-        
-        vk::CommandBuffer m_CommandBuffer;
     };
 }

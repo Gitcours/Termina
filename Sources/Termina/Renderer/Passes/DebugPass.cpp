@@ -249,8 +249,8 @@ namespace Termina {
             float angle1 = angleStep * i;
             float angle2 = angleStep * (i + 1);
 
-            glm::vec3 offset1 = radius * (cos(angle1) * ortho + sin(angle1) * right);
-            glm::vec3 offset2 = radius * (cos(angle2) * ortho + sin(angle2) * right);
+            glm::vec3 offset1 = radius * (ortho * cosf(angle1) + sinf(angle1) * right);
+            glm::vec3 offset2 = radius * (ortho * cosf(angle2) + sinf(angle2) * right);
 
             s_Instance->AddLine(from + offset1, to + offset1, color, transform);
             s_Instance->AddLine(from + offset1, from + offset2, color, transform);
@@ -271,7 +271,7 @@ namespace Termina {
                     float theta2 = 2.0f * pi * (j + 1) / segments;
 
                     auto getPos = [&](float p, float t) {
-                        return center + radius * (sin(p) * (cos(t) * ortho + sin(t) * right) + cos(p) * axisDir);
+                        return center + radius * (sinf(p) * (cosf(t) * ortho + sinf(t) * right) + cosf(p) * axisDir);
                     };
 
                     glm::vec3 p1 = getPos(phi1, theta1);
@@ -304,8 +304,8 @@ namespace Termina {
             float angle1 = angleStep * i;
             float angle2 = angleStep * (i + 1);
 
-            glm::vec3 offset1 = radius * (cos(angle1) * ortho + sin(angle1) * right);
-            glm::vec3 offset2 = radius * (cos(angle2) * ortho + sin(angle2) * right);
+            glm::vec3 offset1 = radius * (ortho * cosf(angle1) + sinf(angle1) * right);
+            glm::vec3 offset2 = radius * (ortho * cosf(angle2) + sinf(angle2) * right);
 
             s_Instance->AddLine(base + offset1, base + offset2, color, transform);
             if (i % 4 == 0) {
@@ -381,8 +381,8 @@ namespace Termina {
             float angle1 = angleStep * i;
             float angle2 = angleStep * (i + 1);
 
-            glm::vec3 p1 = center + radius * (cos(angle1) * ortho + sin(angle1) * right);
-            glm::vec3 p2 = center + radius * (cos(angle2) * ortho + sin(angle2) * right);
+            glm::vec3 p1 = center + radius * (cosf(angle1) * ortho + sinf(angle1) * right);
+            glm::vec3 p2 = center + radius * (cosf(angle2) * ortho + sinf(angle2) * right);
 
             s_Instance->AddLine(p1, p2, color, transform);
         }
@@ -403,8 +403,8 @@ namespace Termina {
             float angle1 = angleStep * i;
             float angle2 = angleStep * (i + 1);
 
-            glm::vec3 offset1 = radius * (cos(angle1) * ortho + sin(angle1) * right);
-            glm::vec3 offset2 = radius * (cos(angle2) * ortho + sin(angle2) * right);
+            glm::vec3 offset1 = radius * (cosf(angle1) * ortho + sinf(angle1) * right);
+            glm::vec3 offset2 = radius * (cosf(angle2) * ortho + sinf(angle2) * right);
 
             // Bottom circle
             s_Instance->AddLine(from + offset1, from + offset2, color, transform);
@@ -442,12 +442,12 @@ namespace Termina {
 
             // Rodrigues' rotation formula to rotate start direction around normal
             glm::vec3 p1 = center + radius * (
-                cos(a1) * start +
-                sin(a1) * glm::cross(n, start)
+                cosf(a1) * start +
+                sinf(a1) * glm::cross(n, start)
             );
             glm::vec3 p2 = center + radius * (
-                cos(a2) * start +
-                sin(a2) * glm::cross(n, start)
+                cosf(a2) * start +
+                sinf(a2) * glm::cross(n, start)
             );
 
             s_Instance->AddLine(p1, p2, color, transform);
