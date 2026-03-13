@@ -11,6 +11,7 @@
 #include <Termina/Core/Logger.hpp>
 
 #include "ImGui/imgui.h"
+#include "Termina/Asset/AssetSystem.hpp"
 #include "Termina/Audio/AudioSystem.hpp"
 #include "Termina/Input/InputSystem.hpp"
 #include "Termina/Platform/LaunchProcess.hpp"
@@ -28,6 +29,7 @@ EditorApplication::EditorApplication()
     m_SystemManager.AddSystem<Termina::ShaderManager>();
     m_SystemManager.AddSystem<Termina::AudioSystem>();
     m_SystemManager.AddSystem<Termina::ScriptSystem>();
+    m_SystemManager.AddSystem<Termina::AssetSystem>();
 
     RegisterPanel<ViewportPanel>();
     RegisterPanel<WorldHierarchyPanel>();
