@@ -30,12 +30,6 @@ namespace VMA_HPP_NAMESPACE {
   using VULKAN_HPP_NAMESPACE::operator|;
   using VULKAN_HPP_NAMESPACE::operator^;
   using VULKAN_HPP_NAMESPACE::operator~;
-#if !defined(TRMN_WINDOWS)
-  using VULKAN_HPP_NAMESPACE::operator<;
-  using VULKAN_HPP_NAMESPACE::operator<=;
-  using VULKAN_HPP_NAMESPACE::operator>;
-  using VULKAN_HPP_NAMESPACE::operator>=;
-#endif
   using VULKAN_HPP_NAMESPACE::operator==;
   using VULKAN_HPP_NAMESPACE::operator!=;
 }

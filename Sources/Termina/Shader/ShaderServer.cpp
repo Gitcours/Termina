@@ -13,9 +13,6 @@ namespace Termina {
 
     void ShaderServer::Clear()
     {
-        if (m_Device) {
-            m_Device->WaitIdle();
-        }
         // Delete all pending deletions first
         for (auto* pipeline : m_PendingDeletion) {
             if (pipeline) delete pipeline;
