@@ -1,8 +1,8 @@
 #pragma once
 
-namespace Termina { class Actor; }
+#include <Termina/Core/IInspectable.hpp>
 
 struct EditorContext
 {
-    Termina::Actor* SelectedActor = nullptr;
+    Termina::IInspectable* ItemToInspect = nullptr;
 };

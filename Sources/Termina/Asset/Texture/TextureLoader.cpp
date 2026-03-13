@@ -1,4 +1,5 @@
 #include "TextureLoader.hpp"
+#include "Core/Logger.hpp"
 
 #include <Termina/Core/Application.hpp>
 #include <Termina/Renderer/Renderer.hpp>
@@ -9,10 +10,14 @@ namespace Termina {
 
     TextureAsset* TextureLoader::LoadFromDisk(const std::string& path)
     {
+        stbi_set_flip_vertically_on_load(1);
+
         int width, height, channels;
         stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-        if (!pixels)
+        if (!pixels) {
+            TN_ERROR("Failed to load texture %s", path.c_str());
             return nullptr;
+        }
 
         const uint64 dataSize = static_cast<uint64>(width) * height * 4;
 
@@ -24,6 +29,7 @@ namespace Termina {
             .SetUsage(TextureUsage::SHADER_READ);
 
         RendererTexture* texture = renderer->GetDevice()->CreateTexture(desc);
+        texture->SetName(path);
 
         TextureUploadDesc uploadDesc;
         uploadDesc.Width  = static_cast<uint32>(width);

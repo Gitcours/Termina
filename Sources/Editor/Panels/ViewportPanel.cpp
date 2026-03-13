@@ -7,6 +7,7 @@
 #include "Termina/Renderer/Renderer.hpp"
 #include "Termina/Renderer/UIUtils.hpp"
 #include "Termina/World/Components/Transform.hpp"
+#include "Termina/World/Actor.hpp"
 #include "Termina/World/WorldSystem.hpp"
 
 #include <GLM/gtc/type_ptr.hpp>
@@ -76,38 +77,46 @@ void ViewportPanel::OnImGuiRender()
     ImGuizmo::SetDrawlist();
     ImGuizmo::SetRect(imagePos.x, imagePos.y, imageSize.x, imageSize.y);
 
-    if (m_Context.SelectedActor && !worldSystem->IsPlaying()) {
-        Termina::Transform& transform = m_Context.SelectedActor->GetComponent<Termina::Transform>();
-        glm::mat4 worldMatrix = transform.GetWorldMatrix();
+    // Use the generic ItemToInspect (IInspectable) from the EditorContext.
+    // If the inspected item is an Actor, run the same gizmo/transform logic.
+    // Otherwise, allow the item to handle gizmo behavior itself via OnGizmo().
+    if (m_Context.ItemToInspect && !worldSystem->IsPlaying()) {
+        if (auto* actor = dynamic_cast<Termina::Actor*>(m_Context.ItemToInspect)) {
+            Termina::Transform& transform = actor->GetComponent<Termina::Transform>();
+            glm::mat4 worldMatrix = transform.GetWorldMatrix();
 
-        glm::mat4 view = renderer->GetCurrentCamera().View;
-        glm::mat4 projection = renderer->GetCurrentCamera().Projection;
-        for (int col = 0; col < 4; col++)
-            view[col][1] = -view[col][1];
+            glm::mat4 view = renderer->GetCurrentCamera().View;
+            glm::mat4 projection = renderer->GetCurrentCamera().Projection;
+            for (int col = 0; col < 4; col++)
+                view[col][1] = -view[col][1];
 
-        if (ImGuizmo::Manipulate(glm::value_ptr(view),
-                             glm::value_ptr(projection),
-                             m_GizmoOp,
-                             ImGuizmo::WORLD,
-                             glm::value_ptr(worldMatrix))) {
-            glm::vec3 position, scale, skew;
-            glm::quat rotation;
-            glm::vec4 perspective;
-            glm::decompose(worldMatrix, scale, rotation, position, skew, perspective);
+            if (ImGuizmo::Manipulate(glm::value_ptr(view),
+                                 glm::value_ptr(projection),
+                                 m_GizmoOp,
+                                 ImGuizmo::WORLD,
+                                 glm::value_ptr(worldMatrix))) {
+                glm::vec3 position, scale, skew;
+                glm::quat rotation;
+                glm::vec4 perspective;
+                glm::decompose(worldMatrix, scale, rotation, position, skew, perspective);
 
-            // Validate decomposed values - skip if NaN detected
-            auto isValid = [](const glm::vec3& v) { return !glm::any(glm::isnan(v)); };
-            if (isValid(position) && isValid(scale) && !glm::any(glm::isnan(glm::vec4(rotation.x, rotation.y, rotation.z, rotation.w)))) {
-                // Clamp scale to prevent near-zero values
-                const float minScale = 0.001f;
-                scale.x = glm::max(glm::abs(scale.x), minScale) * glm::sign(scale.x);
-                scale.y = glm::max(glm::abs(scale.y), minScale) * glm::sign(scale.y);
-                scale.z = glm::max(glm::abs(scale.z), minScale) * glm::sign(scale.z);
+                // Validate decomposed values - skip if NaN detected
+                auto isValid = [](const glm::vec3& v) { return !glm::any(glm::isnan(v)); };
+                if (isValid(position) && isValid(scale) && !glm::any(glm::isnan(glm::vec4(rotation.x, rotation.y, rotation.z, rotation.w)))) {
+                    // Clamp scale to prevent near-zero values
+                    const float minScale = 0.001f;
+                    scale.x = glm::max(glm::abs(scale.x), minScale) * glm::sign(scale.x);
+                    scale.y = glm::max(glm::abs(scale.y), minScale) * glm::sign(scale.y);
+                    scale.z = glm::max(glm::abs(scale.z), minScale) * glm::sign(scale.z);
 
-                transform.SetLocalPosition(position);
-                transform.SetLocalRotation(rotation);
-                transform.SetLocalScale(scale);
+                    transform.SetLocalPosition(position);
+                    transform.SetLocalRotation(rotation);
+                    transform.SetLocalScale(scale);
+                }
             }
+        } else {
+            // Non-actor inspectable items can implement their own gizmo handling.
+            m_Context.ItemToInspect->OnGizmo();
         }
     }
 

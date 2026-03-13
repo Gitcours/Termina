@@ -1,5 +1,15 @@
 #include "Actor.hpp"
 #include "Component.hpp"
+#include "ComponentRegistry.hpp"
+#include "Components/Transform.hpp"
+
+#include "ImGui/imgui.h"
+#include <Termina/Renderer/UIUtils.hpp>
+
+#include <algorithm>
+#include <cctype>
+#include <typeindex>
+#include <unordered_set>
 
 namespace Termina {
     Actor::Actor(World* world, const std::string& name)
@@ -182,5 +192,103 @@ namespace Termina {
             current = current->m_Parent;
         }
         return false;
+    }
+
+    void Actor::Inspect()
+    {
+        // Name
+        char nameBuf[256];
+        strncpy(nameBuf, m_Name.c_str(), sizeof(nameBuf) - 1);
+        nameBuf[sizeof(nameBuf) - 1] = '\0';
+        ImGui::SetNextItemWidth(-1.0f);
+        if (ImGui::InputText("##name", nameBuf, sizeof(nameBuf)))
+            m_Name = nameBuf;
+
+        // Active flag
+        ImGui::Checkbox("Active", &m_Active);
+
+        ImGui::Separator();
+
+        // Components — each gets a collapsing header and calls its own Inspect()
+        Component* compToRemove = nullptr;
+        for (auto* comp : m_Components)
+        {
+            std::string compName =
+                ComponentRegistry::Get().GetNameForType(typeid(*comp));
+            if (compName.empty())
+                compName = "Unknown Component";
+
+            ImGui::PushID(comp);
+            UIUtils::PushStylized();
+            bool open = ImGui::TreeNodeEx(compName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed);
+            UIUtils::PopStylized();
+            if (ImGui::BeginPopupContextItem("##CompCtx")) {
+                bool isTransform = dynamic_cast<Transform*>(comp) != nullptr;
+                if (ImGui::MenuItem("Delete Component", nullptr, false, !isTransform))
+                    compToRemove = comp;
+                ImGui::EndPopup();
+            }
+            if (open) {
+                comp->Inspect();
+                ImGui::TreePop();
+            }
+            ImGui::PopID();
+        }
+        if (compToRemove)
+            RemoveComponentRaw(compToRemove);
+
+        ImGui::Separator();
+
+        // Collect types already on this actor
+        std::unordered_set<std::type_index> existing;
+        for (auto* c : m_Components)
+            existing.insert(typeid(*c));
+
+        UIUtils::PushStylized();
+        if (UIUtils::Button("Add Component")) {
+            static char searchBuf[128] = {};
+            searchBuf[0] = '\0';
+            ImGui::OpenPopup("##AddComponent");
+        }
+        UIUtils::PopStylized();
+
+        if (ImGui::BeginPopup("##AddComponent")) {
+            static char searchBuf[128] = {};
+            ImGui::SetNextItemWidth(-1.0f);
+            if (ImGui::IsWindowAppearing()) {
+                searchBuf[0] = '\0';
+                ImGui::SetKeyboardFocusHere();
+            }
+            ImGui::InputText("##CompSearch", searchBuf, sizeof(searchBuf));
+
+            ImGui::Separator();
+
+            std::string filter = searchBuf;
+            std::transform(filter.begin(), filter.end(), filter.begin(),
+                [](unsigned char c) { return std::tolower(c); });
+
+            std::type_index selectedType = typeid(void);
+            ComponentRegistry::Get().ForEach([&](const ComponentRegistry::Entry& entry) {
+                if (existing.count(entry.Type))
+                    return true;
+                if (!filter.empty()) {
+                    std::string name = entry.Name;
+                    std::transform(name.begin(), name.end(), name.begin(),
+                        [](unsigned char c) { return std::tolower(c); });
+                    if (name.find(filter) == std::string::npos)
+                        return true;
+                }
+                if (ImGui::MenuItem(entry.Name.c_str()))
+                    selectedType = entry.Type;
+                return true;
+            });
+            ImGui::EndPopup();
+
+            if (selectedType != typeid(void)) {
+                auto* comp = ComponentRegistry::Get().CreateByType(selectedType, this);
+                if (comp)
+                    AddComponentRaw(comp);
+            }
+        }
     }
 }

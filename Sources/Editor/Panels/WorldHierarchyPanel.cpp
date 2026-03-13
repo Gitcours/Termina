@@ -16,7 +16,7 @@ void WorldHierarchyPanel::DrawActorNode(Termina::Actor* actor)
     if (actor->GetChildren().empty())
         flags |= ImGuiTreeNodeFlags_Leaf;
 
-    if (m_Context.SelectedActor == actor)
+    if (m_Context.ItemToInspect == actor)
         flags |= ImGuiTreeNodeFlags_Selected;
 
     if (!actor->IsActive())
@@ -50,7 +50,7 @@ void WorldHierarchyPanel::DrawActorNode(Termina::Actor* actor)
     }
 
     if (ImGui::IsItemClicked())
-        m_Context.SelectedActor = actor;
+        m_Context.ItemToInspect = actor;
 
     bool shouldDestroy = false;
     if (ImGui::BeginPopupContextItem())
@@ -62,8 +62,8 @@ void WorldHierarchyPanel::DrawActorNode(Termina::Actor* actor)
         }
         if (ImGui::MenuItem("Destroy"))
         {
-            if (m_Context.SelectedActor == actor)
-                m_Context.SelectedActor = nullptr;
+            if (m_Context.ItemToInspect == actor)
+                m_Context.ItemToInspect = nullptr;
             shouldDestroy = true;
         }
         ImGui::EndPopup();

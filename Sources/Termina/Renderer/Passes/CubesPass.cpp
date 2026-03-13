@@ -1,6 +1,10 @@
 #include "CubesPass.hpp"
+#include "Asset/AssetHandle.hpp"
+#include "Asset/AssetSystem.hpp"
+#include "Asset/Texture/TextureAsset.hpp"
 #include "RHI/Device.hpp"
 #include "RHI/RenderContext.hpp"
+#include "RHI/TextureView.hpp"
 #include "Renderer/Components/CameraComponent.hpp"
 
 #include <Termina/Core/Application.hpp>
@@ -25,6 +29,10 @@ namespace Termina {
         desc.SetUsage(TextureUsage::DEPTH_TARGET | TextureUsage::SHADER_READ);
         m_DepthTexture = device->CreateTexture(desc);
         m_DepthTexture->SetName("Cubes Depth Texture");
+
+        // Load texture
+        AssetSystem* assetSystem = Application::GetSystem<AssetSystem>();
+        m_TextureHandle = assetSystem->Load<TextureAsset>("Assets/Textures/TestTexture.png");
 
         // Create pipeline
         ShaderServer& server = Application::GetSystem<ShaderManager>()->GetShaderServer();
@@ -53,6 +61,7 @@ namespace Termina {
 
     void CubesPass::Execute(RenderPassExecuteInfo& info)
     {
+
         ShaderServer& server = Application::GetSystem<ShaderManager>()->GetShaderServer();
 
         TextureView* colorView = info.ViewCache->GetTextureView(TextureViewDesc().SetTexture(m_ColorTexture)
@@ -70,8 +79,18 @@ namespace Termina {
         re->SetScissorRect(0.0f, 0.0f, static_cast<float>(info.Width), static_cast<float>(info.Height));
         for (auto& entity : info.CurrentWorld->GetActors()) {
             if (entity->HasComponent<CameraComponent>()) continue;
-            glm::mat4 transform = info.CurrentCamera.ViewProjection * entity->GetComponent<Transform>().GetWorldMatrix();
-            re->SetConstants(sizeof(glm::mat4), &transform);
+
+            struct Constants {
+                glm::mat4 MVP;
+
+                int TextureIndex;
+                int SamplerIndex;
+            } constants = {
+                .MVP = info.CurrentCamera.ViewProjection * entity->GetComponent<Transform>().GetWorldMatrix(),
+                .TextureIndex = info.ViewCache->GetTextureView(TextureViewDesc().CreateDefault(m_TextureHandle->GetTexture(), TextureViewType::SHADER_READ, TextureViewDimension::TEXTURE_2D))->GetBindlessIndex(),
+                .SamplerIndex = info.SampCache->GetSampler(SamplerDesc())->GetBindlessHandle(),
+            };
+            re->SetConstants(sizeof(constants), &constants);
             re->Draw(36, 1, 0, 0);
         }
         re->End();

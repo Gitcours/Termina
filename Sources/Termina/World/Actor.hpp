@@ -8,13 +8,14 @@
 
 #include <Termina/Core/Common.hpp>
 #include <Termina/Core/ID.hpp>
+#include <Termina/Core/IInspectable.hpp>
 #include <Termina/World/Component.hpp>
 
 namespace Termina {
     class World;
 
     /// Represents an entity in the world with components.
-    class Actor
+    class Actor : public IInspectable
     {
     public:
         Actor(World* parentWorld, const std::string& name = "Entity");
@@ -23,7 +24,7 @@ namespace Termina {
         template<typename T, typename... Args>
         T& AddComponent(Args&&... args)
         {
-            static_assert(std::is_base_of_v<Component, T>);
+            static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
             if (HasComponent<T>())
                 return GetComponent<T>();
 
@@ -98,6 +99,9 @@ namespace Termina {
 
         // Remove and delete a component by pointer. Does nothing if not found.
         void RemoveComponentRaw(Component* comp);
+
+        void Inspect() override;
+        void OnGizmo() override {}
 
         uint64 GetID() const { return m_ID; }
         World* GetParentWorld() { return m_ParentWorld; }

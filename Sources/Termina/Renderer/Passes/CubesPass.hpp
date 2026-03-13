@@ -1,6 +1,10 @@
 #pragma once
 
 #include <Termina/Renderer/RenderPass.hpp>
+#include <Termina/Asset/AssetHandle.hpp>
+#include <Termina/Asset/AssetSystem.hpp>
+#include <Termina/Asset/Texture/TextureAsset.hpp>
+
 
 namespace Termina {
     /// Renders cubes using the given render pass execute info.
@@ -15,5 +19,7 @@ namespace Termina {
     private:
         RendererTexture* m_ColorTexture;
         RendererTexture* m_DepthTexture;
+
+        AssetHandle<TextureAsset> m_TextureHandle;
     };
 }

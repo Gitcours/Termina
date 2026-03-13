@@ -137,6 +137,9 @@ struct VertexOutput
 struct PushConstants
 {
     column_major float4x4 ModelViewProjection;
+
+    int TextureIndex;
+    int SamplerIndex;
 };
 PUSH_CONSTANTS(PushConstants);
 
@@ -153,5 +156,9 @@ VertexOutput VSMain(uint VertexID : SV_VertexID)
 
 float4 FSMain(VertexOutput input) : SV_Target
 {
-    return float4(input.Color, 1.0f);
+    Texture2D<float4> texture = ResourceDescriptorHeap[PUSH.TextureIndex];
+    SamplerState sampler = SamplerDescriptorHeap[PUSH.SamplerIndex];
+    float4 color = texture.Sample(sampler, input.UV);
+
+    return float4(color.rgb * input.Color, 1.0f);
 }
