@@ -18,9 +18,6 @@ namespace Termina {
 
     WorldSystem::~WorldSystem()
     {
-        if (m_IsPlaying)
-            m_CurrentWorld->OnStop();
-        m_CurrentWorld->OnShutdown();
     }
 
     // ---------------------------------------------------------------------------

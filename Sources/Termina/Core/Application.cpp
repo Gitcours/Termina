@@ -1,4 +1,5 @@
 #include "Application.hpp"
+#include "World/WorldSystem.hpp"
 
 namespace Termina {
     Application* Application::s_Instance = nullptr;
@@ -13,6 +14,12 @@ namespace Termina {
 
     Application::~Application()
     {
+        WorldSystem* worldSystem = m_SystemManager.GetSystem<WorldSystem>();
+        if (worldSystem) {
+            if (worldSystem->IsPlaying())
+                worldSystem->GetCurrentWorld()->OnStop();
+            worldSystem->GetCurrentWorld()->OnShutdown();
+        }
         m_SystemManager.Clean();
         delete m_Window;
     }
