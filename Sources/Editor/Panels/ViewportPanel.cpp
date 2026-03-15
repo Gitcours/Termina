@@ -11,6 +11,7 @@
 #include "Termina/World/WorldSystem.hpp"
 #include "Termina/Renderer/Components/CameraComponent.hpp"
 #include "Termina/Renderer/Passes/DebugPass.hpp"
+#include "Termina/Renderer/Passes/GBufferPass.hpp"
 
 #include <GLM/gtc/type_ptr.hpp>
 #include <GLM/gtx/matrix_decompose.hpp>
@@ -34,6 +35,7 @@ void ViewportPanel::OnImGuiRender()
         if (Termina::UIUtils::Button("Stop")) {
             worldSystem->Stop();
             m_Context.ItemToInspect = nullptr;
+            m_Context.SelectedActors.clear();
         }
     } else {
         if (Termina::UIUtils::Button("Play"))
@@ -57,6 +59,20 @@ void ViewportPanel::OnImGuiRender()
     gizmoButton("T", ImGuizmo::TRANSLATE);
     gizmoButton("R", ImGuizmo::ROTATE);
     gizmoButton("S", ImGuizmo::SCALE);
+
+    // Right-aligned stats overlay on the same toolbar row
+    {
+        auto* gbuf = renderer->GetRenderPass<Termina::GBufferPass>();
+        int32 dc   = gbuf ? gbuf->GetLastDrawCallCount() : 0;
+        int32 tris = gbuf ? gbuf->GetLastTriangleCount() : 0;
+        float fps  = (m_Context.LastDeltaTime > 0.0f) ? (1.0f / m_Context.LastDeltaTime) : 0.0f;
+
+        char statsText[128];
+        snprintf(statsText, sizeof(statsText), "FPS: %.1f  |  DC: %d  |  Tris: %d", fps, dc, tris);
+        float statsWidth = ImGui::CalcTextSize(statsText).x + ImGui::GetStyle().ItemSpacing.x;
+        ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - statsWidth);
+        ImGui::TextDisabled("%s", statsText);
+    }
     ImGui::NewLine();
 
     ImVec2 imagePos;

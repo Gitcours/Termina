@@ -327,8 +327,12 @@ namespace Termina {
             }
         }
 
-        m_LastTotalCount  = totalCount;
-        m_LastCulledCount = totalCount - instanceCount;
+        m_LastTotalCount    = totalCount;
+        m_LastCulledCount   = totalCount - instanceCount;
+        m_LastDrawCallCount = static_cast<int32>(draws.size());
+        int32 triCount = 0;
+        for (const DrawCall& dc : draws) triCount += static_cast<int32>(dc.indexCount) / 3;
+        m_LastTriangleCount = triCount;
 
         // --- Debug visualization when frustum is frozen ---
         if (m_FrustumFrozen)

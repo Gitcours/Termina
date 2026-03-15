@@ -7,6 +7,10 @@
 #include <Termina/World/WorldSystem.hpp>
 #include <Termina/World/World.hpp>
 #include <Termina/World/Actor.hpp>
+#include <Termina/World/Components/Transform.hpp>
+
+#include <GLM/glm.hpp>
+#include <algorithm>
 
 void WorldHierarchyPanel::DrawActorNode(Termina::Actor* actor)
 {
@@ -17,7 +21,10 @@ void WorldHierarchyPanel::DrawActorNode(Termina::Actor* actor)
     if (actor->GetChildren().empty())
         flags |= ImGuiTreeNodeFlags_Leaf;
 
-    if (m_Context.ItemToInspect == actor)
+    bool isSelected = (m_Context.ItemToInspect == actor) ||
+        (std::find(m_Context.SelectedActors.begin(), m_Context.SelectedActors.end(), actor)
+         != m_Context.SelectedActors.end());
+    if (isSelected)
         flags |= ImGuiTreeNodeFlags_Selected;
 
     if (!actor->IsActive())
@@ -49,9 +56,32 @@ void WorldHierarchyPanel::DrawActorNode(Termina::Actor* actor)
     });
 
     if (ImGui::IsItemClicked())
-        m_Context.ItemToInspect = actor;
+    {
+        if (ImGui::GetIO().KeyCtrl)
+        {
+            auto it = std::find(m_Context.SelectedActors.begin(), m_Context.SelectedActors.end(), actor);
+            if (it != m_Context.SelectedActors.end())
+            {
+                m_Context.SelectedActors.erase(it);
+                if (m_Context.ItemToInspect == actor)
+                    m_Context.ItemToInspect = m_Context.SelectedActors.empty() ? nullptr : m_Context.SelectedActors.back();
+            }
+            else
+            {
+                m_Context.SelectedActors.push_back(actor);
+                m_Context.ItemToInspect = actor;
+            }
+        }
+        else
+        {
+            m_Context.SelectedActors.clear();
+            m_Context.SelectedActors.push_back(actor);
+            m_Context.ItemToInspect = actor;
+        }
+    }
 
     bool shouldDestroy = false;
+    bool shouldDestroySelection = false;
     if (ImGui::BeginPopupContextItem())
     {
         if (ImGui::MenuItem("Spawn Child"))
@@ -61,9 +91,19 @@ void WorldHierarchyPanel::DrawActorNode(Termina::Actor* actor)
         }
         if (ImGui::MenuItem("Destroy"))
         {
-            if (m_Context.ItemToInspect == actor)
-                m_Context.ItemToInspect = nullptr;
-            shouldDestroy = true;
+            bool inSelection = std::find(m_Context.SelectedActors.begin(), m_Context.SelectedActors.end(), actor)
+                               != m_Context.SelectedActors.end();
+            if (inSelection && m_Context.SelectedActors.size() > 1)
+                shouldDestroySelection = true;
+            else
+            {
+                if (m_Context.ItemToInspect == actor)
+                    m_Context.ItemToInspect = nullptr;
+                m_Context.SelectedActors.erase(
+                    std::remove(m_Context.SelectedActors.begin(), m_Context.SelectedActors.end(), actor),
+                    m_Context.SelectedActors.end());
+                shouldDestroy = true;
+            }
         }
         ImGui::EndPopup();
     }
@@ -72,6 +112,18 @@ void WorldHierarchyPanel::DrawActorNode(Termina::Actor* actor)
     if (shouldDestroy)
     {
         actor->GetParentWorld()->DestroyActor(actor);
+        if (open) ImGui::TreePop();
+        return;
+    }
+
+    if (shouldDestroySelection)
+    {
+        auto toDestroy = m_Context.SelectedActors;
+        m_Context.SelectedActors.clear();
+        m_Context.ItemToInspect = nullptr;
+        auto* world = actor->GetParentWorld();
+        for (auto* a : toDestroy)
+            world->DestroyActor(a);
         if (open) ImGui::TreePop();
         return;
     }
@@ -114,6 +166,78 @@ void WorldHierarchyPanel::OnImGuiRender()
     }
 
     ImGui::Separator();
+
+    // Keyboard shortcuts for clipboard and duplication
+    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        const bool ctrl = io.KeyCtrl;
+
+        // Ctrl+C: Copy
+        if (ctrl && ImGui::IsKeyPressed(ImGuiKey_C, false))
+        {
+            m_Context.Clipboard.clear();
+            m_Context.ClipboardIsCut = false;
+            for (auto* a : m_Context.SelectedActors)
+                m_Context.Clipboard.push_back(a->GetID());
+        }
+        // Ctrl+X: Cut
+        if (ctrl && ImGui::IsKeyPressed(ImGuiKey_X, false))
+        {
+            m_Context.Clipboard.clear();
+            m_Context.ClipboardIsCut = true;
+            for (auto* a : m_Context.SelectedActors)
+                m_Context.Clipboard.push_back(a->GetID());
+        }
+        // Ctrl+V: Paste
+        if (ctrl && ImGui::IsKeyPressed(ImGuiKey_V, false) && !m_Context.Clipboard.empty())
+        {
+            std::vector<Termina::Actor*> originals;
+            for (uint64 id : m_Context.Clipboard)
+                if (auto* a = world->GetActorById(id)) originals.push_back(a);
+
+            m_Context.SelectedActors.clear();
+            m_Context.ItemToInspect = nullptr;
+            const glm::vec3 offset(0.5f, 0.0f, 0.5f);
+
+            for (auto* src : originals)
+            {
+                auto* copy = world->SpawnActorFrom(src);
+                if (copy)
+                {
+                    auto& t = copy->GetComponent<Termina::Transform>();
+                    t.SetPosition(t.GetPosition() + offset);
+                    m_Context.SelectedActors.push_back(copy);
+                    m_Context.ItemToInspect = copy;
+                }
+            }
+            if (m_Context.ClipboardIsCut)
+            {
+                for (auto* src : originals) world->DestroyActor(src);
+                m_Context.Clipboard.clear();
+                m_Context.ClipboardIsCut = false;
+            }
+        }
+        // Ctrl+D: Duplicate
+        if (ctrl && ImGui::IsKeyPressed(ImGuiKey_D, false) && !m_Context.SelectedActors.empty())
+        {
+            auto sources = m_Context.SelectedActors;
+            m_Context.SelectedActors.clear();
+            m_Context.ItemToInspect = nullptr;
+            const glm::vec3 offset(0.5f, 0.0f, 0.5f);
+            for (auto* src : sources)
+            {
+                auto* copy = world->SpawnActorFrom(src);
+                if (copy)
+                {
+                    auto& t = copy->GetComponent<Termina::Transform>();
+                    t.SetPosition(t.GetPosition() + offset);
+                    m_Context.SelectedActors.push_back(copy);
+                    m_Context.ItemToInspect = copy;
+                }
+            }
+        }
+    }
 
     for (auto* root : world->GetRootActors())
         DrawActorNode(root);

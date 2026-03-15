@@ -48,4 +48,6 @@ private:
         bool Physics       = false;
         bool Log           = false;
     } m_DebugWindows;
+
+    bool m_ShowAbout = false;
 };

@@ -21,6 +21,9 @@ namespace Termina {
         void Execute(RenderPassExecuteInfo& info) override;
         void Inspect() override;
 
+        int32 GetLastDrawCallCount() const { return m_LastDrawCallCount; }
+        int32 GetLastTriangleCount() const { return m_LastTriangleCount; }
+
     private:
         static constexpr int32 MAX_INSTANCES = 4096;
         static constexpr int32 MAX_MATERIALS = 1024;
@@ -49,6 +52,10 @@ namespace Termina {
         glm::mat4        m_FrozenViewProj      = glm::mat4(1.0f);
         int32            m_LastCulledCount     = 0;
         int32            m_LastTotalCount      = 0;
+
+        // Rendering stats
+        int32            m_LastDrawCallCount   = 0;
+        int32            m_LastTriangleCount   = 0;
     };
 
 } // namespace Termina
