@@ -30,6 +30,10 @@ namespace Termina {
         m_Camera.Projection = glm::perspective(glm::radians(m_FOV), aspectRatio, m_Camera.Near, m_Camera.Far);
         m_Camera.View = glm::lookAt(m_Camera.Position, m_Camera.Position + m_Camera.Direction, glm::vec3(0.0f, 1.0f, 0.0f));
         m_Camera.ViewProjection = m_Camera.Projection * m_Camera.View;
+        
+        m_Camera.InverseProjection = glm::inverse(m_Camera.Projection);
+        m_Camera.InverseView = glm::inverse(m_Camera.View);
+        m_Camera.InverseViewProjection = glm::inverse(m_Camera.ViewProjection);
     }
 
     void CameraComponent::OnPreUpdate(float deltaTime)

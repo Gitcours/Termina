@@ -55,13 +55,13 @@ void PhysicsTestComponent::SpawnFunnel()
 
     struct PanelDesc { glm::vec3 pos; glm::vec3 eulerDeg; glm::vec3 halfExtents; };
 
-    // Side panels tilted outward to form an upside-down funnel ~35 degrees
+    // Side panels tilted inward to form a regular funnel ~35 degrees
     const PanelDesc panels[] =
     {
-        {{ 0.0f,  1.0f,  1.6f}, { 35.0f,  0.0f,  0.0f}, {1.5f, 0.05f, 1.5f}},  // front
-        {{ 0.0f,  1.0f, -1.6f}, {-35.0f,  0.0f,  0.0f}, {1.5f, 0.05f, 1.5f}},  // back
-        {{ 1.6f,  1.0f,  0.0f}, {  0.0f,  0.0f, -35.0f},{1.5f, 0.05f, 1.5f}},  // right
-        {{-1.6f,  1.0f,  0.0f}, {  0.0f,  0.0f,  35.0f},{1.5f, 0.05f, 1.5f}},  // left
+        {{ 0.0f,  1.0f,  1.6f}, {-35.0f,  0.0f,  0.0f}, {1.5f, 0.05f, 1.5f}},  // front
+        {{ 0.0f,  1.0f, -1.6f}, { 35.0f,  0.0f,  0.0f}, {1.5f, 0.05f, 1.5f}},  // back
+        {{ 1.6f,  1.0f,  0.0f}, {  0.0f,  0.0f,  35.0f},{1.5f, 0.05f, 1.5f}},  // right
+        {{-1.6f,  1.0f,  0.0f}, {  0.0f,  0.0f, -35.0f},{1.5f, 0.05f, 1.5f}},  // left
     };
 
     for (auto& p : panels)

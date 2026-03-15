@@ -45,10 +45,12 @@ void FlyCamComponent::Update(float deltaTime)
     {
         glm::vec2 delta = Input::GetMouseDelta();
         m_Yaw   -= delta.x * m_Sensitivity;
-        m_Pitch += delta.y * m_Sensitivity;
+        m_Pitch -= delta.y * m_Sensitivity;
         m_Pitch = std::clamp(m_Pitch, -89.0f, 89.0f);
 
-        m_Transform->SetEulerAngles(glm::vec3(m_Pitch, m_Yaw, 0.0f));
+        glm::quat pitchQuat = glm::angleAxis(glm::radians(m_Pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::quat yawQuat   = glm::angleAxis(glm::radians(m_Yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+        m_Transform->SetRotation(yawQuat * pitchQuat);
     }
 
     glm::vec3 forward = m_Transform->GetForward();

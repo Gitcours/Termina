@@ -178,7 +178,7 @@ namespace Termina {
         m_System = new JPH::PhysicsSystem();
         m_System->Init(maxBodies, numBodyMutexes, maxBodyPairs, maxContactConstraints,
                        s_BPLayerInterface, s_ObjVsBP, s_ObjPairFilter);
-        m_System->SetGravity(JPH::Vec3(0.0f, 9.81f, 0.0f));
+        m_System->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
         m_BodyInterface = &m_System->GetBodyInterface();
         m_ThreadPool    = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, availableThreads);

@@ -111,7 +111,7 @@ namespace Termina {
         {
             TextureView* depthView = info.ViewCache->GetTextureView(
                 TextureViewDesc().SetTexture(depthTex).SetType(TextureViewType::DEPTH_TARGET));
-            encoderInfo.SetDepthAttachment(depthView);
+            encoderInfo.SetDepthAttachment(depthView, false);
         }
 
         RenderEncoder* encoder = info.Ctx->CreateRenderEncoder(encoderInfo);

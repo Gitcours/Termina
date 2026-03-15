@@ -16,6 +16,7 @@
 #include "Renderer/Passes/ImGuiPass.hpp"
 #include "Renderer/Passes/DebugPass.hpp"
 #include "Renderer/Passes/FXAAPass.hpp"
+#include "Renderer/Passes/SkyPass.hpp"
 #include "Renderer/UIUtils.hpp"
 #include "World/Component.hpp"
 #include "World/ComponentRegistry.hpp"
@@ -164,6 +165,7 @@ namespace Termina {
             new GBufferPass(),
             new RTShadowPass(),
             new DeferredPass(),
+            new SkyPass(),
             new TonemapPass(),
             new FXAAPass(),
             new DebugPass(),

@@ -82,6 +82,6 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     rq.TraceRayInline(tlas, 0, 1, ray);
     rq.Proceed();
 
-    float shadow = (rq.CommittedStatus() == COMMITTED_TRIANGLE_HIT) ? 0.0f : 1.0f;
+    float shadow = (rq.CommittedStatus() == COMMITTED_TRIANGLE_HIT) ? 0.009f : 1.0f;
     shadowOut[id.xy] = shadow;
 }

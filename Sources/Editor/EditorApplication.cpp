@@ -66,8 +66,10 @@ void EditorApplication::OnUpdate(float dt)
     float h = m_Context.ViewportHeight > 0.0f ? m_Context.ViewportHeight : static_cast<float>(m_Window->GetHeight());
     if (!ImGui::GetIO().WantCaptureKeyboard && !GetSystem<Termina::WorldSystem>()->IsPlaying())
         m_Camera.Update(dt, w, h);
-    if (!GetSystem<Termina::WorldSystem>()->IsPlaying())
+    if (!GetSystem<Termina::WorldSystem>()->IsPlaying()) {
         renderer->SetCurrentCamera(m_Camera);
+        Termina::DebugPass::DrawGrid(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 250.0f, 250);
+    }
 
     RenderDockspace();
 
