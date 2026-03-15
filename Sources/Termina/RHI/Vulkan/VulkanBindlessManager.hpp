@@ -25,6 +25,9 @@ namespace Termina {
     
         int32 WriteSampler(VulkanSampler* sampler);
         void FreeSampler(int32 index) { m_SamplerAllocator.Free(index); }
+
+        int32 WriteAccelerationStructure(vk::AccelerationStructureKHR as);
+        void  FreeAccelerationStructure(int32 index) { m_AccelerationStructureAllocator.Free(index); }
     
         vk::DescriptorSetLayout GetLayout() const { return m_Layout; }
         vk::DescriptorSet GetDescriptorSet() const { return m_Set; }

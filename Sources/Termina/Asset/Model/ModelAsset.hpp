@@ -3,6 +3,7 @@
 #include <Termina/Core/IInspectable.hpp>
 #include <Termina/RHI/Buffer.hpp>
 #include <Termina/RHI/BufferView.hpp>
+#include <Termina/RHI/BLAS.hpp>
 #include <Termina/Asset/AssetHandle.hpp>
 #include <Termina/Asset/Material/MaterialAsset.hpp>
 
@@ -52,6 +53,7 @@ namespace Termina {
         std::string           Name;
         uint32                MaterialIndex = 0; // index into ModelAsset::Materials
         uint32                BaseVertex    = 0; // vertex offset in global VB (passed as DrawIndexed vertexOffset)
+        uint32                VertexCount   = 0; // vertex count for this primitive (used by BLAS build)
         std::vector<MeshLOD>  LODs;              // LODs[0] = highest detail
         glm::mat4             LocalTransform = glm::mat4(1.0f); // pre-baked GLTF node world matrix
         AABB                  Bounds;            // world-space AABB, ready for frustum culling
@@ -72,6 +74,7 @@ namespace Termina {
         RendererBuffer* VertexBuffer = nullptr; // BufferUsage::VERTEX | SHADER_READ
         RendererBuffer* IndexBuffer  = nullptr; // BufferUsage::INDEX
         BufferView*     VertexView   = nullptr; // bindless SRV index for shader access
+        BLAS*           BLASObject   = nullptr; // null when RT not supported
 
         // CPU-side positions and indices retained for physics (MeshCollider).
         std::vector<glm::vec3> CpuPositions;

@@ -8,6 +8,7 @@ namespace Termina {
 
     ModelAsset::~ModelAsset()
     {
+        delete BLASObject;
         delete VertexView;
         delete VertexBuffer;
         delete IndexBuffer;

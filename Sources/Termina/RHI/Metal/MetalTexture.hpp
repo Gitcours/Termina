@@ -33,6 +33,7 @@ namespace Termina {
         switch (format)
         {
             case TextureFormat::UNDEFINED:     return MTLPixelFormatInvalid;
+            case TextureFormat::R8_UNORM:      return MTLPixelFormatR8Unorm;
             case TextureFormat::RGBA8_UNORM:   return MTLPixelFormatRGBA8Unorm;
             case TextureFormat::RGBA8_SRGB:    return MTLPixelFormatRGBA8Unorm_sRGB;
             case TextureFormat::BGRA8_UNORM:   return MTLPixelFormatBGRA8Unorm;

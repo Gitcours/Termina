@@ -36,6 +36,7 @@ namespace Termina {
         switch (format)
         {
         case TextureFormat::UNDEFINED:     return vk::Format::eUndefined;
+        case TextureFormat::R8_UNORM:      return vk::Format::eR8Unorm;
         case TextureFormat::RGBA8_UNORM:   return vk::Format::eR8G8B8A8Unorm;
         case TextureFormat::RGBA8_SRGB:    return vk::Format::eR8G8B8A8Srgb;
         case TextureFormat::BGRA8_UNORM:   return vk::Format::eB8G8R8A8Unorm;

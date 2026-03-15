@@ -1,7 +1,6 @@
 ## TODO
 
 ## Sunday
-- CPU frustum culling
 - Vulkan/Metal RT
 - Raytraced shadows
 - Temporal anti-aliasing

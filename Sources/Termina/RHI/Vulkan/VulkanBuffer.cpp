@@ -12,12 +12,22 @@ namespace Termina {
         vk::BufferCreateInfo bufferInfo{};
         bufferInfo.size = desc.Size;
         bufferInfo.sharingMode = vk::SharingMode::eExclusive;
-        bufferInfo.usage |= vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer;
-        if (Any(desc.Usage, BufferUsage::VERTEX)) bufferInfo.usage |= vk::BufferUsageFlagBits::eVertexBuffer;
-        if (Any(desc.Usage, BufferUsage::INDEX)) bufferInfo.usage |= vk::BufferUsageFlagBits::eIndexBuffer;
+        // eShaderDeviceAddress is always enabled (VMA allocator uses eBufferDeviceAddress)
+        bufferInfo.usage |= vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst
+                          | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eShaderDeviceAddress;
+        if (Any(desc.Usage, BufferUsage::VERTEX)) {
+            bufferInfo.usage |= vk::BufferUsageFlagBits::eVertexBuffer
+                              | vk::BufferUsageFlagBits::eAccelerationStructureBuildInputReadOnlyKHR;
+        }
+        if (Any(desc.Usage, BufferUsage::INDEX)) {
+            bufferInfo.usage |= vk::BufferUsageFlagBits::eIndexBuffer
+                              | vk::BufferUsageFlagBits::eAccelerationStructureBuildInputReadOnlyKHR;
+        }
         if (Any(desc.Usage, BufferUsage::CONSTANT)) bufferInfo.usage |= vk::BufferUsageFlagBits::eUniformBuffer;
         if (Any(desc.Usage, BufferUsage::INDIRECT_COMMANDS)) bufferInfo.usage |= vk::BufferUsageFlagBits::eIndirectBuffer;
-        if (Any(desc.Usage, BufferUsage::ACCELERATION_STRUCTURE)) bufferInfo.usage |= vk::BufferUsageFlagBits::eAccelerationStructureStorageKHR;
+        if (Any(desc.Usage, BufferUsage::ACCELERATION_STRUCTURE)) {
+            bufferInfo.usage |= vk::BufferUsageFlagBits::eAccelerationStructureStorageKHR;
+        }
     
         vma::AllocationCreateInfo allocInfo;
         memset(&allocInfo, 0, sizeof(allocInfo)); // Work around for Windows because for some reason minAlignment isn't in the C++ version of VMA

@@ -11,6 +11,7 @@ namespace Termina {
     enum class TextureFormat
     {
         UNDEFINED,
+        R8_UNORM,
         RGBA8_UNORM,
         RGBA8_SRGB,
         BGRA8_UNORM,
@@ -114,6 +115,8 @@ namespace Termina {
     inline uint32 TextureFormatBPP(TextureFormat format)
     {
         switch (format) {
+        case TextureFormat::R8_UNORM:
+            return 1;
         case TextureFormat::RGBA8_UNORM:
         case TextureFormat::RGBA8_SRGB:
         case TextureFormat::BGRA8_UNORM:

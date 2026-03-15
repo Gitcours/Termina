@@ -20,7 +20,7 @@ struct PushConstants
     float3          CameraPos;
     int             Width;
     int             Height;
-    int             _pad;
+    int             ShadowMaskIndex; // -1 if no RT shadow pass
 };
 PUSH_CONSTANTS(PushConstants);
 
@@ -72,11 +72,19 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     // --- Accumulate light contributions ---
     float3 Lo = float3(0.0f, 0.0f, 0.0f);
 
+    float shadowFactor = 1.0f;
+    if (PUSH.ShadowMaskIndex >= 0)
+    {
+        Texture2D<float> shadowMask = ResourceDescriptorHeap[PUSH.ShadowMaskIndex];
+        shadowFactor = shadowMask[id.xy];
+    }
+
     if (PUSH.LightCount > 0) {
         StructuredBuffer<GPULight> lights = ResourceDescriptorHeap[PUSH.LightBufferIndex];
         for (int i = 0; i < PUSH.LightCount; ++i)
         {
-            Lo += EvaluateLight(lights[i], worldPos, N, V, albedo, roughness, metallic);
+            float sf = (lights[i].Type == 0) ? shadowFactor : 1.0f;
+            Lo += EvaluateLight(lights[i], worldPos, N, V, albedo, roughness, metallic, sf);
         }
     }
 

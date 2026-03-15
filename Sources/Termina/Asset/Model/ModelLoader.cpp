@@ -346,6 +346,7 @@ ModelAsset* ModelLoader::LoadFromDisk(const std::string& path)
                     inst.Name += "_" + std::to_string(pi);
                 inst.MaterialIndex = materialIndex;
                 inst.BaseVertex    = baseVertex;
+                inst.VertexCount   = static_cast<uint32>(vertCount);
                 inst.LocalTransform = glm::mat4(1.0f); // already baked into vertex data
                 inst.Bounds        = bounds;
                 inst.LODs.push_back({ firstIndex, static_cast<uint32>(primIndices.size()) });
@@ -418,6 +419,30 @@ ModelAsset* ModelLoader::LoadFromDisk(const std::string& path)
     // -----------------------------------------------------------------------
     modelAsset->VertexView = device->CreateBufferView(
         BufferViewDesc().SetBuffer(modelAsset->VertexBuffer).SetType(BufferViewType::SHADER_READ));
+
+    // -----------------------------------------------------------------------
+    // 5. Build BLAS for ray tracing (if supported)
+    // -----------------------------------------------------------------------
+    if (device->SupportsRaytracing() && !modelAsset->Instances.empty())
+    {
+        BLASDesc blasDesc;
+        blasDesc.VertexBuffer = modelAsset->VertexBuffer;
+        blasDesc.IndexBuffer  = modelAsset->IndexBuffer;
+
+        for (const MeshInstance& inst : modelAsset->Instances)
+        {
+            if (inst.LODs.empty()) continue;
+            BLASGeometry geo;
+            geo.VertexOffset = inst.BaseVertex;
+            geo.VertexCount  = inst.VertexCount;
+            geo.IndexOffset  = inst.LODs[0].IndexOffset;
+            geo.IndexCount   = inst.LODs[0].IndexCount;
+            geo.Opaque       = true;
+            blasDesc.Geometries.push_back(geo);
+        }
+
+        modelAsset->BLASObject = device->CreateBLAS(blasDesc);
+    }
 
     TN_INFO("ModelLoader: loaded '%s' - %zu instances, %zu vertices, %zu indices",
            path.c_str(), modelAsset->Instances.size(), allVertices.size(), allIndices.size());

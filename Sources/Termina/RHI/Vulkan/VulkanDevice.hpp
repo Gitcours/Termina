@@ -28,6 +28,8 @@ namespace Termina {
         BufferView* CreateBufferView(const BufferViewDesc& desc) override;
         Sampler* CreateSampler(const SamplerDesc& desc) override;
         ComputePipeline* CreateComputePipeline(const ShaderModule& module, const std::string& name = "Compute Pipeline") override;
+        BLAS* CreateBLAS(const BLASDesc& desc) override;
+        TLAS* CreateTLAS(uint32 maxInstances) override;
 
         vk::Instance GetVulkanInstance() const { return m_Instance; }
         vk::Device GetVulkanDevice() const { return m_Device; }

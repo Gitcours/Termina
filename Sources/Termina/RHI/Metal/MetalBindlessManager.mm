@@ -62,6 +62,19 @@ namespace Termina {
         return index;
     }
 
+    // Metal Shader Converter requires RaytracingAccelerationStructure to be accessed as a buffer
+    // containing the AS GPU resource ID — not as a direct resource heap entry.
+    // The caller is responsible for creating and updating the handle buffer.
+    uint32 MetalBindlessManager::WriteAccelerationStructure(MetalBuffer* handleBuffer)
+    {
+        IRDescriptorTableEntry entry;
+        IRDescriptorTableSetBuffer(&entry, handleBuffer->GetGPUAddress(), 0);
+
+        uint index = m_FreeList.Allocate();
+        memcpy((char*)m_MappedData + index * sizeof(IRDescriptorTableEntry), &entry, sizeof(IRDescriptorTableEntry));
+        return index;
+    }
+
     void MetalBindlessManager::Free(uint index)
     {
         m_FreeList.Free(index);

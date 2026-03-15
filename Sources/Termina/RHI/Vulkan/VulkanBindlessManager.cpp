@@ -261,6 +261,32 @@ namespace Termina {
         return index;
     }
     
+    int32 VulkanBindlessManager::WriteAccelerationStructure(vk::AccelerationStructureKHR as)
+    {
+        if (!m_ParentDevice->SupportsRaytracing()) return -1;
+
+        int32 index = m_AccelerationStructureAllocator.Allocate();
+        if (index == FreeList::INVALID) {
+            TN_ERROR("Failed to allocate bindless acceleration structure descriptor - pool exhausted");
+            return -1;
+        }
+
+        vk::WriteDescriptorSetAccelerationStructureKHR asInfo;
+        asInfo.setAccelerationStructureCount(1);
+        asInfo.setPAccelerationStructures(&as);
+
+        vk::WriteDescriptorSet writeInfo;
+        writeInfo.setDstSet(m_Set);
+        writeInfo.setDstBinding(2);
+        writeInfo.setDstArrayElement(index);
+        writeInfo.setDescriptorType(vk::DescriptorType::eAccelerationStructureKHR);
+        writeInfo.setDescriptorCount(1);
+        writeInfo.setPNext(&asInfo);
+
+        m_ParentDevice->GetVulkanDevice().updateDescriptorSets(writeInfo, {});
+        return index;
+    }
+
     int32 VulkanBindlessManager::WriteSampler(VulkanSampler* sampler)
     {
         int32 index = m_SamplerAllocator.Allocate();

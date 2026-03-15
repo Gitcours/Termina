@@ -21,6 +21,9 @@ namespace Termina {
         uint32 WriteTextureView(MetalTextureView* view);
         uint32 WriteBufferView(MetalBufferView* view);
         uint32 WriteSampler(MetalSampler* sampler);
+        // handleBuffer must contain the AS GPU resource ID (uint64) at offset 0.
+        // MSC translates RaytracingAccelerationStructure into a buffer pointer dereference.
+        uint32 WriteAccelerationStructure(MetalBuffer* handleBuffer);
         void Free(uint32 index);
         void FreeSampler(uint32 index);
 

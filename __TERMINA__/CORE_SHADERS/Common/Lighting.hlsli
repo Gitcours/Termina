@@ -73,7 +73,8 @@ float3 EvaluateLight(GPULight light,
                      float3   V,
                      float3   albedo,
                      float    roughness,
-                     float    metallic)
+                     float    metallic,
+                     float    shadowFactor)
 {
     float3 L       = float3(0.0f, 0.0f, 0.0f);
     float  radiance = 1.0f;
@@ -127,7 +128,7 @@ float3 EvaluateLight(GPULight light,
     float3 kD    = (1.0f - F) * (1.0f - metallic);
     float3 diffuse = kD * albedo / PI;
 
-    return (diffuse + specular) * light.Color * radiance * NdotL;
+    return (diffuse + specular) * light.Color * radiance * NdotL * shadowFactor;
 }
 
 #endif // LIGHTING_HLSLI

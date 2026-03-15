@@ -11,6 +11,8 @@
 #include "BufferView.hpp"
 #include "Sampler.hpp"
 #include "ComputePipeline.hpp"
+#include "BLAS.hpp"
+#include "TLAS.hpp"
 
 namespace Termina {
     /// Represents the backend renderer used by the device.
@@ -43,6 +45,8 @@ namespace Termina {
         virtual BufferView* CreateBufferView(const BufferViewDesc& desc) = 0;
         virtual Sampler* CreateSampler(const SamplerDesc& desc) = 0;
         virtual ComputePipeline* CreateComputePipeline(const ShaderModule& module, const std::string& name = "Compute Pipeline") = 0;
+        virtual BLAS* CreateBLAS(const BLASDesc& desc) = 0;
+        virtual TLAS* CreateTLAS(uint32 maxInstances) = 0;
 
         // Device information
         virtual bool SupportsRaytracing() const = 0;

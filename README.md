@@ -16,6 +16,9 @@ Termina is a game engine made in about a week.
 - Asset system
 - Fully fledged editor, launcher, and project system
 - Physics system
+- Physically based BRDF
+- Point/Spot/Directional lights
+- Raytraced shadows
 
 ## Dependencies
 

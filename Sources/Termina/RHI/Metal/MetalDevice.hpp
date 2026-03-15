@@ -27,6 +27,8 @@ namespace Termina {
         BufferView* CreateBufferView(const BufferViewDesc& desc) override;
         Sampler* CreateSampler(const SamplerDesc& desc) override;
         ComputePipeline* CreateComputePipeline(const ShaderModule& module, const std::string& name = "Compute Pipeline") override;
+        BLAS* CreateBLAS(const BLASDesc& desc) override;
+        TLAS* CreateTLAS(uint32 maxInstances) override;
 
         bool SupportsRaytracing() const override { return m_Device.supportsRaytracing; }
         bool SupportsMeshShaders() const override { return SupportsRaytracing(); }

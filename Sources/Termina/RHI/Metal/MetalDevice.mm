@@ -8,6 +8,8 @@
 #include "MetalBufferView.hpp"
 #include "MetalSampler.hpp"
 #include "MetalComputePipeline.hpp"
+#include "MetalBLAS.hpp"
+#include "MetalTLAS.hpp"
 
 #include <Termina/Core/Logger.hpp>
 
@@ -97,5 +99,17 @@ namespace Termina {
     ComputePipeline* MetalDevice::CreateComputePipeline(const ShaderModule& module, const std::string& name)
     {
         return reinterpret_cast<ComputePipeline*>(new MetalComputePipeline(this, module, name));
+    }
+
+    BLAS* MetalDevice::CreateBLAS(const BLASDesc& desc)
+    {
+        if (!m_Device.supportsRaytracing) return nullptr;
+        return reinterpret_cast<BLAS*>(new MetalBLAS(this, desc));
+    }
+
+    TLAS* MetalDevice::CreateTLAS(uint32 maxInstances)
+    {
+        if (!m_Device.supportsRaytracing) return nullptr;
+        return reinterpret_cast<TLAS*>(new MetalTLAS(this, maxInstances));
     }
 } // namespace Termina

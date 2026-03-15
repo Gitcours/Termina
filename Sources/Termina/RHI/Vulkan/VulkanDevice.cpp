@@ -8,6 +8,8 @@
 #include "VulkanBufferView.hpp"
 #include "VulkanSampler.hpp"
 #include "VulkanComputePipeline.hpp"
+#include "VulkanBLAS.hpp"
+#include "VulkanTLAS.hpp"
 
 #include <Termina/Core/Logger.hpp>
 
@@ -353,5 +355,17 @@ namespace Termina {
     ComputePipeline* VulkanDevice::CreateComputePipeline(const ShaderModule& module, const std::string& name)
     {
         return new VulkanComputePipeline(this, module, name);
+    }
+
+    BLAS* VulkanDevice::CreateBLAS(const BLASDesc& desc)
+    {
+        if (!m_SupportRaytracing) return nullptr;
+        return new VulkanBLAS(this, desc);
+    }
+
+    TLAS* VulkanDevice::CreateTLAS(uint32 maxInstances)
+    {
+        if (!m_SupportRaytracing) return nullptr;
+        return new VulkanTLAS(this, maxInstances);
     }
 }

@@ -93,7 +93,7 @@ namespace Termina {
             glm::vec3   CameraPos;
             int32       Width;
             int32       Height;
-            int32       _pad;
+            int32       ShadowMaskIndex;
         };
 
         DeferredPushConstants pc;
@@ -109,7 +109,14 @@ namespace Termina {
         pc.CameraPos        = info.CurrentCamera.Position;
         pc.Width            = info.Width;
         pc.Height           = info.Height;
-        pc._pad             = 0;
+        pc.ShadowMaskIndex  = -1;
+        if (info.IO->HasTexture("ShadowMask"))
+        {
+            RendererTexture* shadowMask = info.IO->GetTexture("ShadowMask");
+            TextureView* shadowSRV = info.ViewCache->GetTextureView(
+                TextureViewDesc::CreateDefault(shadowMask, TextureViewType::SHADER_READ, TextureViewDimension::TEXTURE_2D));
+            pc.ShadowMaskIndex = shadowSRV->GetBindlessIndex();
+        }
 
         ComputeEncoder* ce = info.Ctx->CreateComputeEncoder("Deferred Pass");
         ce->SetPipeline(server.GetComputePipeline("__TERMINA__/CORE_SHADERS/Deferred.hlsl"));
