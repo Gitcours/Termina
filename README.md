@@ -1,6 +1,6 @@
 # TERMINA ENGINE : 1 WEEK TO MAKE IT HAPPEN
 
-![](.github/logo.png)
+![](.github/image.png)
 
 Termina is a game engine made in about a week.
 
@@ -11,14 +11,29 @@ Termina is a game engine made in about a week.
 - Audio system with spatialization
 - Input system (keyboard, mouse, gamepad)
 - C++ scripting with hot-reload
-- Shader hot reload
+- Automatic shader hot reload
 - Actor model and world serialization/deserialization
-- Asset system
+- Asset system with ref-counting
 - Fully fledged editor, launcher, and project system
 - Physics system
 - Physically based BRDF
 - Point/Spot/Directional lights
+- Deferred shading
+- CPU frustum culling
 - Raytraced shadows
+- Procedural sky
+- FXAA
+- Debug renderer
+- HDR rendering
+
+## Building
+
+```
+xmake
+xmake run Editor
+```
+
+woaw!
 
 ## Dependencies
 

@@ -24,6 +24,8 @@
 #include "Termina/World/World.hpp"
 #include "Termina/World/WorldSystem.hpp"
 
+#include <Termina/Core/Version.hpp>
+
 #include <filesystem>
 
 EditorApplication::EditorApplication(const std::string& projectPath)
@@ -55,12 +57,15 @@ EditorApplication::EditorApplication(const std::string& projectPath)
 EditorApplication::~EditorApplication()
 {
     m_Context.ItemToInspect = nullptr;
+    m_Context.SelectedActors.clear();
     m_Context.ContentViewer = nullptr;
     m_Panels.clear();
 }
 
 void EditorApplication::OnUpdate(float dt)
 {
+    m_Context.LastDeltaTime = dt;
+
     auto* renderer = GetSystem<Termina::RendererSystem>();
     float w = m_Context.ViewportWidth > 0.0f ? m_Context.ViewportWidth : static_cast<float>(m_Window->GetWidth());
     float h = m_Context.ViewportHeight > 0.0f ? m_Context.ViewportHeight : static_cast<float>(m_Window->GetHeight());
@@ -121,6 +126,7 @@ void EditorApplication::OpenWorld()
 
     auto* worldSystem = GetSystem<Termina::WorldSystem>();
     m_Context.ItemToInspect = nullptr;
+    m_Context.SelectedActors.clear();
     if (worldSystem->LoadWorld(path))
     {
         // Both old world (now unloaded) and new world are settled;
@@ -135,6 +141,7 @@ void EditorApplication::NewWorld()
     SaveWorld();
 
     m_Context.ItemToInspect = nullptr;
+    m_Context.SelectedActors.clear();
     auto* worldSystem = GetSystem<Termina::WorldSystem>();
     worldSystem->NewWorld();
 
@@ -172,6 +179,9 @@ void EditorApplication::RenderDockspace()
         {
             if (Termina::UIUtils::MenuItem("Quit"))
                 m_Running = false;
+            ImGui::Separator();
+            if (Termina::UIUtils::MenuItem("About"))
+                m_ShowAbout = true;
             Termina::UIUtils::EndMenu();
         }
 
@@ -225,6 +235,25 @@ void EditorApplication::RenderDockspace()
         Termina::UIUtils::EndMenuBar();
     }
     Termina::UIUtils::PopStylized();
+
+    // About modal
+    if (m_ShowAbout) ImGui::OpenPopup("About Termina");
+    ImGui::SetNextWindowSize(ImVec2(400, 160), ImGuiCond_Always);
+    if (ImGui::BeginPopupModal("About Termina", nullptr, ImGuiWindowFlags_NoResize))
+    {
+        ImGui::Text("Termina Engine");
+        ImGui::Separator();
+        ImGui::Text("Version:    %s", Termina::TERMINA_VERSION);
+        ImGui::Text("Author:     %s", Termina::TERMINA_AUTHOR);
+        ImGui::Text("Build date: %s", Termina::TERMINA_BUILD_DATE);
+        ImGui::Spacing();
+        if (ImGui::Button("Close", ImVec2(120, 0)))
+        {
+            m_ShowAbout = false;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
 
     ImGuiID dockspaceId = ImGui::GetID("DockspaceRoot");
     ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);

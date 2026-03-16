@@ -56,6 +56,13 @@ namespace Termina {
         SamplerCache* GetSamplerCache() const { return m_SamplerCache; }
         PassIO* GetPassIO() { return &m_PassIO; }
 
+        template<typename T>
+        T* GetRenderPass() const {
+            for (RenderPass* pass : m_RenderPasses)
+                if (T* typed = dynamic_cast<T*>(pass)) return typed;
+            return nullptr;
+        }
+
         void SetShouldImGuiClear(bool clear) { m_ShouldImGuiClear = clear; }
 
         void ShowDebugWindow(bool* open = nullptr);
