@@ -12,7 +12,7 @@ namespace Termina {
     {
         ImGuiIO& io = ImGui::GetIO();
         sData.RegularFont = io.Fonts->AddFontFromFileTTF("__TERMINA__/FONTS/PlayfairDisplay-Regular.ttf", 20.0f);
-        sData.CapitalFont = io.Fonts->AddFontFromFileTTF("__TERMINA__/FONTS/UnifrakturMaguntia-Regular.ttf", 24.0f);
+        sData.CapitalFont = io.Fonts->AddFontFromFileTTF("__TERMINA__/FONTS/PlayfairDisplay-Regular.ttf", 24.0f);
 
         SetTheme();
     }
