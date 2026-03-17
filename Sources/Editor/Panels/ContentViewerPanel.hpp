@@ -18,8 +18,14 @@ public:
     const std::filesystem::path& GetCurrentPath() const { return m_CurrentPath; }
 
 private:
+    void Navigate(const std::filesystem::path& path);
+
     std::filesystem::path m_CurrentPath;
     std::string m_SelectedEntry;
+
+    // History
+    std::vector<std::filesystem::path> m_BackHistory;
+    std::vector<std::filesystem::path> m_ForwardHistory;
 
     // Modal state
     bool        m_ShowNewFolderModal  = false;

@@ -32,19 +32,13 @@ namespace Termina {
     // Position
     void Transform::SetPosition(const glm::vec3& position)
     {
-        m_Position = position;
-        MarkDirty();
-    }
-
-    void Transform::SetLocalPosition(const glm::vec3& position)
-    {
         if (m_Owner && m_Owner->GetParent()) {
             Actor* parent = m_Owner->GetParent();
             if (parent->HasComponent<Transform>()) {
                 Transform& parentTransform = parent->GetComponent<Transform>();
-                glm::mat4 parentWorld = parentTransform.GetWorldMatrix();
-                glm::vec4 worldPos = parentWorld * glm::vec4(position, 1.0f);
-                m_Position = glm::vec3(worldPos);
+                glm::mat4 invParent = parentTransform.GetInverseWorldMatrix();
+                glm::vec4 localPos = invParent * glm::vec4(position, 1.0f);
+                m_Position = glm::vec3(localPos);
             } else {
                 m_Position = position;
             }
@@ -54,54 +48,61 @@ namespace Termina {
         MarkDirty();
     }
 
+    glm::vec3 Transform::GetPosition() const
+    {
+        glm::mat4 world = GetWorldMatrix();
+        return glm::vec3(world[3]);
+    }
+
+    void Transform::SetLocalPosition(const glm::vec3& position)
+    {
+        m_Position = position;
+        MarkDirty();
+    }
+
     glm::vec3 Transform::GetLocalPosition() const
     {
-        if (m_Owner && m_Owner->GetParent()) {
-            Actor* parent = m_Owner->GetParent();
-            if (parent->HasComponent<Transform>()) {
-                Transform& parentTransform = parent->GetComponent<Transform>();
-                glm::mat4 invParent = parentTransform.GetInverseWorldMatrix();
-                glm::vec4 localPos = invParent * glm::vec4(m_Position, 1.0f);
-                return glm::vec3(localPos);
-            }
-        }
         return m_Position;
     }
 
     // Rotation
     void Transform::SetRotation(const glm::quat& rotation)
     {
-        m_Rotation = glm::normalize(rotation);
-        MarkDirty();
-    }
-
-    void Transform::SetLocalRotation(const glm::quat& rotation)
-    {
-        if (m_Owner && m_Owner->GetParent()) {
-            Actor* parent = m_Owner->GetParent();
-            if (parent->HasComponent<Transform>()) {
-                Transform& parentTransform = parent->GetComponent<Transform>();
-                m_Rotation = parentTransform.GetRotation() * rotation;
-            } else {
-                m_Rotation = rotation;
-            }
-        } else {
-            m_Rotation = rotation;
-        }
-        m_Rotation = glm::normalize(m_Rotation);
-        MarkDirty();
-    }
-
-    glm::quat Transform::GetLocalRotation() const
-    {
         if (m_Owner && m_Owner->GetParent()) {
             Actor* parent = m_Owner->GetParent();
             if (parent->HasComponent<Transform>()) {
                 Transform& parentTransform = parent->GetComponent<Transform>();
                 glm::quat parentRot = parentTransform.GetRotation();
-                return glm::inverse(parentRot) * m_Rotation;
+                m_Rotation = glm::inverse(parentRot) * glm::normalize(rotation);
+            } else {
+                m_Rotation = glm::normalize(rotation);
+            }
+        } else {
+            m_Rotation = glm::normalize(rotation);
+        }
+        MarkDirty();
+    }
+
+    glm::quat Transform::GetRotation() const
+    {
+        if (m_Owner && m_Owner->GetParent()) {
+            Actor* parent = m_Owner->GetParent();
+            if (parent->HasComponent<Transform>()) {
+                Transform& parentTransform = parent->GetComponent<Transform>();
+                return parentTransform.GetRotation() * m_Rotation;
             }
         }
+        return m_Rotation;
+    }
+
+    void Transform::SetLocalRotation(const glm::quat& rotation)
+    {
+        m_Rotation = glm::normalize(rotation);
+        MarkDirty();
+    }
+
+    glm::quat Transform::GetLocalRotation() const
+    {
         return m_Rotation;
     }
 
@@ -121,17 +122,12 @@ namespace Termina {
     // Scale
     void Transform::SetScale(const glm::vec3& scale)
     {
-        m_Scale = scale;
-        MarkDirty();
-    }
-
-    void Transform::SetLocalScale(const glm::vec3& scale)
-    {
         if (m_Owner && m_Owner->GetParent()) {
             Actor* parent = m_Owner->GetParent();
             if (parent->HasComponent<Transform>()) {
                 Transform& parentTransform = parent->GetComponent<Transform>();
-                m_Scale = parentTransform.GetScale() * scale;
+                glm::vec3 parentScale = parentTransform.GetScale();
+                m_Scale = scale / parentScale;
             } else {
                 m_Scale = scale;
             }
@@ -141,20 +137,26 @@ namespace Termina {
         MarkDirty();
     }
 
-    glm::vec3 Transform::GetLocalScale() const
+    glm::vec3 Transform::GetScale() const
     {
         if (m_Owner && m_Owner->GetParent()) {
             Actor* parent = m_Owner->GetParent();
             if (parent->HasComponent<Transform>()) {
                 Transform& parentTransform = parent->GetComponent<Transform>();
-                glm::vec3 parentScale = parentTransform.GetScale();
-                return glm::vec3(
-                    m_Scale.x / parentScale.x,
-                    m_Scale.y / parentScale.y,
-                    m_Scale.z / parentScale.z
-                );
+                return parentTransform.GetScale() * m_Scale;
             }
         }
+        return m_Scale;
+    }
+
+    void Transform::SetLocalScale(const glm::vec3& scale)
+    {
+        m_Scale = scale;
+        MarkDirty();
+    }
+
+    glm::vec3 Transform::GetLocalScale() const
+    {
         return m_Scale;
     }
 

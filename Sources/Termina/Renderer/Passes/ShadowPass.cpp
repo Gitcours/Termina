@@ -1,4 +1,4 @@
-#include "RTShadowPass.hpp"
+#include "ShadowPass.hpp"
 
 #include <Termina/Core/Application.hpp>
 #include <Termina/Asset/Model/ModelAsset.hpp>
@@ -14,12 +14,9 @@
 
 namespace Termina {
 
-    RTShadowPass::RTShadowPass()
+    ShadowPass::ShadowPass()
     {
         RendererDevice* device = Application::GetSystem<RendererSystem>()->GetDevice();
-
-        if (!device->SupportsRaytracing())
-            return;
 
         uint32 width  = Application::Get().GetWindow()->GetPixelWidth();
         uint32 height = Application::Get().GetWindow()->GetPixelHeight();
@@ -27,39 +24,53 @@ namespace Termina {
         m_ShadowMask = device->CreateTexture(TextureDesc()
             .SetSize(width, height)
             .SetFormat(TextureFormat::R8_UNORM)
-            .SetUsage(TextureUsage::SHADER_WRITE | TextureUsage::SHADER_READ));
+            .SetUsage(TextureUsage::SHADER_WRITE | TextureUsage::SHADER_READ | TextureUsage::RENDER_TARGET));
         m_ShadowMask->SetName("Shadow Mask");
 
-        m_TLAS = device->CreateTLAS(MAX_TLAS_INSTANCES);
+        if (device->SupportsRaytracing())
+        {
+            m_TLAS = device->CreateTLAS(MAX_TLAS_INSTANCES);
 
-        // Pre-allocate TLAS scratch buffer (~4 MB is sufficient for most scenes)
-        m_TLASScratch = device->CreateBuffer(BufferDesc()
-            .SetSize(4 * 1024 * 1024)
-            .SetUsage(BufferUsage::ACCELERATION_STRUCTURE | BufferUsage::SHADER_WRITE));
-        m_TLASScratch->SetName("TLAS Scratch");
+            // Pre-allocate TLAS scratch buffer (~4 MB is sufficient for most scenes)
+            m_TLASScratch = device->CreateBuffer(BufferDesc()
+                .SetSize(4 * 1024 * 1024)
+                .SetUsage(BufferUsage::ACCELERATION_STRUCTURE | BufferUsage::SHADER_WRITE));
+            m_TLASScratch->SetName("TLAS Scratch");
 
-        ShaderServer& server = Application::GetSystem<ShaderManager>()->GetShaderServer();
-        server.WatchPipeline("__TERMINA__/CORE_SHADERS/RTShadow.hlsl", PipelineType::Compute);
+            ShaderServer& server = Application::GetSystem<ShaderManager>()->GetShaderServer();
+            server.WatchPipeline("__TERMINA__/CORE_SHADERS/RTShadow.hlsl", PipelineType::Compute);
+        }
     }
 
-    RTShadowPass::~RTShadowPass()
+    ShadowPass::~ShadowPass()
     {
         delete m_TLASScratch;
         delete m_TLAS;
         delete m_ShadowMask;
     }
 
-    void RTShadowPass::Resize(int32 width, int32 height)
+    void ShadowPass::Resize(int32 width, int32 height)
     {
         if (m_ShadowMask)
             m_ShadowMask->Resize(width, height);
     }
 
-    void RTShadowPass::Execute(RenderPassExecuteInfo& info)
+    void ShadowPass::Execute(RenderPassExecuteInfo& info)
     {
-        if (!info.Device->SupportsRaytracing() || !m_TLAS)
-            return;
+        if (info.Device->SupportsRaytracing() && m_TLAS)
+        {
+            ExecuteRTShadow(info);
+        }
+        else
+        {
+            ExecuteCSMShadow(info);
+        }
 
+        info.IO->RegisterTexture("ShadowMask", m_ShadowMask);
+    }
+
+    void ShadowPass::ExecuteRTShadow(RenderPassExecuteInfo& info)
+    {
         ShaderServer& server = Application::GetSystem<ShaderManager>()->GetShaderServer();
         ComputePipeline* pipeline = server.GetComputePipeline("__TERMINA__/CORE_SHADERS/RTShadow.hlsl");
         if (!pipeline) return;
@@ -81,7 +92,6 @@ namespace Termina {
 
             const glm::mat4 worldMatrix = actor->GetComponent<Transform>().GetWorldMatrix();
 
-            // Flip Y to match the upside-down rasterization coordinate space
             TLASInstanceDesc inst;
             inst.BLASObject = model->BLASObject;
             inst.Transform  = worldMatrix;
@@ -199,8 +209,27 @@ namespace Termina {
             .SetNewLayout(TextureLayout::READ_ONLY)
             .SetDstAccess(ResourceAccess::SHADER_READ)
             .SetDstStage(PipelineStage::COMPUTE_SHADER));
+    }
 
-        info.IO->RegisterTexture("ShadowMask", m_ShadowMask);
+    void ShadowPass::ExecuteCSMShadow(RenderPassExecuteInfo& info)
+    {
+        // No-op CSM implementation for now: clear the shadow mask to 1.0 (white/lit)
+        TextureView* shadowRTV = info.ViewCache->GetTextureView(
+            TextureViewDesc::CreateDefault(m_ShadowMask, TextureViewType::RENDER_TARGET, TextureViewDimension::TEXTURE_2D));
+
+        RenderEncoderInfo rei = RenderEncoderInfo()
+            .SetName("CSM Shadow Clear")
+            .SetDimensions(info.Width, info.Height)
+            .AddColorAttachment(shadowRTV, true, glm::vec4(1.0f));
+
+        RenderEncoder* re = info.Ctx->CreateRenderEncoder(rei);
+        re->End();
+
+        info.Ctx->Barrier(TextureBarrier()
+            .SetTargetTexture(m_ShadowMask)
+            .SetNewLayout(TextureLayout::READ_ONLY)
+            .SetDstAccess(ResourceAccess::SHADER_READ)
+            .SetDstStage(PipelineStage::ALL_GRAPHICS));
     }
 
 } // namespace Termina

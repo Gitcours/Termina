@@ -201,6 +201,16 @@ void EditorApplication::RenderDockspace()
 
         if (Termina::UIUtils::BeginMenu("Layout"))
         {
+            if (Termina::UIUtils::BeginMenu("Theme"))
+            {
+                bool isDark = Termina::UIUtils::IsDarkTheme();
+                if (Termina::UIUtils::MenuItem("Termina (Light)", nullptr, !isDark))
+                    Termina::UIUtils::SetDarkTheme(false);
+                if (Termina::UIUtils::MenuItem("PRHVL BOP (Dark)", nullptr, isDark))
+                    Termina::UIUtils::SetDarkTheme(true);
+                Termina::UIUtils::EndMenu();
+            }
+            ImGui::Separator();
             for (auto& panel : m_Panels)
             {
                 bool open = panel->IsOpen();

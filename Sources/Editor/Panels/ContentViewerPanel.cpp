@@ -1,6 +1,7 @@
 #include "ContentViewerPanel.hpp"
 
 #include "ImGui/imgui.h"
+#include "ImGui/imgui_internal.h"
 #include "Termina/Renderer/UIUtils.hpp"
 
 #include <Termina/Core/Application.hpp>
@@ -15,6 +16,20 @@
 #include <cstring>
 
 namespace fs = std::filesystem;
+
+// ---------------------------------------------------------------------------
+// Navigation helper
+// ---------------------------------------------------------------------------
+
+void ContentViewerPanel::Navigate(const fs::path& path)
+{
+    if (path == m_CurrentPath)
+        return;
+
+    m_BackHistory.push_back(m_CurrentPath);
+    m_ForwardHistory.clear();
+    m_CurrentPath = path;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -262,6 +277,33 @@ void ContentViewerPanel::OnImGuiRender()
 
     Termina::UIUtils::BeginEditorWindow(m_Name.c_str(), &m_Open);
 
+    // Navigation buttons (Back/Forward)
+    {
+        ImGui::BeginDisabled(m_BackHistory.empty());
+        if (ImGui::Button("<"))
+        {
+            m_ForwardHistory.push_back(m_CurrentPath);
+            m_CurrentPath = m_BackHistory.back();
+            m_BackHistory.pop_back();
+        }
+        ImGui::EndDisabled();
+
+        ImGui::SameLine();
+
+        ImGui::BeginDisabled(m_ForwardHistory.empty());
+        if (ImGui::Button(">"))
+        {
+            m_BackHistory.push_back(m_CurrentPath);
+            m_CurrentPath = m_ForwardHistory.back();
+            m_ForwardHistory.pop_back();
+        }
+        ImGui::EndDisabled();
+
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+    }
+
     // Breadcrumb navigation
     {
         fs::path root("Assets");
@@ -278,7 +320,7 @@ void ContentViewerPanel::OnImGuiRender()
                 ImGui::SameLine();
             ImGui::PushID((int)i);
             if (ImGui::SmallButton(parts[i].string().c_str()))
-                m_CurrentPath = accumulated;
+                Navigate(accumulated);
             ImGui::PopID();
             if (i + 1 < parts.size())
             {
@@ -324,7 +366,7 @@ void ContentViewerPanel::OnImGuiRender()
         {
             m_SelectedEntry = entry.path().string();
             if (ImGui::IsMouseDoubleClicked(0))
-                m_CurrentPath = entry.path();
+                Navigate(entry.path());
         }
 
         Termina::UIUtils::AcceptActor([this, entry](Termina::Actor* dragged) {

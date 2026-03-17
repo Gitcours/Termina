@@ -230,19 +230,20 @@ namespace Termina {
         
             m_SupportMeshShaders = true;
         }
+
+        if (optionalExtensions[VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME]) {
+            accelerationStructureFeatures.setAccelerationStructure(true);
+            accelerationStructureFeatures.setDescriptorBindingAccelerationStructureUpdateAfterBind(true);
+            accelerationStructureFeatures.setPNext(lastPNext);
+            lastPNext = &accelerationStructureFeatures;   
+        }
     
         if (optionalExtensions[VK_KHR_RAY_QUERY_EXTENSION_NAME]) {
             rayQueryFeatures.setRayQuery(true);
             rayQueryFeatures.setPNext(lastPNext);
             lastPNext = &rayQueryFeatures;
-        }
-    
-        if (optionalExtensions[VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME]) {
-            accelerationStructureFeatures.setAccelerationStructure(true);
-            accelerationStructureFeatures.setDescriptorBindingAccelerationStructureUpdateAfterBind(true);
-            accelerationStructureFeatures.setPNext(lastPNext);
-            lastPNext = &accelerationStructureFeatures;
-        
+
+            // Raytracing only supported if both ray query and acceleration structure features are available
             m_SupportRaytracing = true;
         }
     

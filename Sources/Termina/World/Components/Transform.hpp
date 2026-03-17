@@ -17,14 +17,14 @@ namespace Termina {
 
         // Position
         void SetPosition(const glm::vec3& position);
-        const glm::vec3& GetPosition() const { return m_Position; }
+        glm::vec3 GetPosition() const;
 
         void SetLocalPosition(const glm::vec3& position);
         glm::vec3 GetLocalPosition() const;
 
         // Rotation (using quaternions for smooth interpolation and no gimbal lock)
         void SetRotation(const glm::quat& rotation);
-        const glm::quat& GetRotation() const { return m_Rotation; }
+        glm::quat GetRotation() const;
 
         void SetLocalRotation(const glm::quat& rotation);
         glm::quat GetLocalRotation() const;
@@ -35,7 +35,7 @@ namespace Termina {
 
         // Scale
         void SetScale(const glm::vec3& scale);
-        const glm::vec3& GetScale() const { return m_Scale; }
+        glm::vec3 GetScale() const;
 
         void SetLocalScale(const glm::vec3& scale);
         glm::vec3 GetLocalScale() const;

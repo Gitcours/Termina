@@ -15,6 +15,20 @@
 namespace Termina {
     typedef HRESULT (*PFN_DxcCreateInstance)(REFCLSID rclsid, REFIID riid, LPVOID *ppv);
 
+    template<typename T>
+    class DxcPtr {
+        T* m_ptr = nullptr;
+    public:
+        DxcPtr() = default;
+        DxcPtr(const DxcPtr&) = delete;
+        DxcPtr& operator=(const DxcPtr&) = delete;
+        ~DxcPtr() { if (m_ptr) m_ptr->Release(); }
+        T* operator->() const { return m_ptr; }
+        explicit operator bool() const { return m_ptr != nullptr; }
+        T* Get() const { return m_ptr; }
+        T** GetAddressOf() { return &m_ptr; }
+    };
+
     inline const char* ProfileFromType(ShaderType type)
     {
         switch (type)
@@ -39,8 +53,6 @@ namespace Termina {
         ShaderManager* manager = Application::GetSystem<ShaderManager>();
         PFN_DxcCreateInstance dxcCreate = (PFN_DxcCreateInstance)manager->GetLibrary().GetSymbol("DxcCreateInstance");
 
-        const char* sourceCstr = args.Source.c_str();
-
         wchar_t wideTarget[512] = {0};
         swprintf_s(wideTarget, 512, L"%hs", ProfileFromType(args.Type));
 
@@ -50,45 +62,48 @@ namespace Termina {
         wchar_t widePath[512] = {0};
         swprintf_s(widePath, 512, L"%hs", args.Path.c_str());
 
-        IDxcUtils* pUtils = nullptr;
-        IDxcCompiler* pCompiler = nullptr;
-        IDxcBlobEncoding* pSourceBlob = nullptr;
-        IDxcIncludeHandler* pIncludeHandler = nullptr;
-        IDxcOperationResult* pResult = nullptr;
-        IDxcBlob* pShaderBlob = nullptr;
-        IDxcBlobEncoding* pErrors = nullptr;
-        IDxcBlobUtf8* pErrorsU8 = nullptr;
+        DxcPtr<IDxcUtils> pUtils;
+        DxcPtr<IDxcCompiler3> pCompiler;
+        DxcPtr<IDxcIncludeHandler> pIncludeHandler;
+        DxcPtr<IDxcResult> pResult;
+        DxcPtr<IDxcBlob> pShaderBlob;
+        DxcPtr<IDxcBlobUtf8> pErrorsU8;
 
         ShaderCompiler::Result result = {};
         result.Success = false;
 
         // Create DXC utils and compiler
-        if (FAILED(dxcCreate(CLSID_DxcUtils, IID_PPV_ARGS(&pUtils)))) {
+        if (FAILED(dxcCreate(CLSID_DxcUtils, IID_PPV_ARGS(pUtils.GetAddressOf())))) {
             TN_ERROR("Failed to create DXC utils!");
             return result;
         }
-        if (FAILED(dxcCreate(CLSID_DxcCompiler, IID_PPV_ARGS(&pCompiler)))) {
+        if (FAILED(dxcCreate(CLSID_DxcCompiler, IID_PPV_ARGS(pCompiler.GetAddressOf())))) {
             TN_ERROR("Failed to create DXC compiler!");
             return result;
         }
 
         // Create default include handler
-        if (FAILED(pUtils->CreateDefaultIncludeHandler(&pIncludeHandler))) {
+        if (FAILED(pUtils->CreateDefaultIncludeHandler(pIncludeHandler.GetAddressOf()))) {
             TN_ERROR("Failed to create include handler!");
             return result;
         }
 
-        // Create source blob
-        if (FAILED(pUtils->CreateBlob(sourceCstr, (uint32)args.Source.size(), 0, &pSourceBlob))) {
-            TN_ERROR("Failed to create source blob!");
-            return result;
-        }
+        // Setup source buffer
+        DxcBuffer sourceBuffer = {};
+        sourceBuffer.Ptr = args.Source.c_str();
+        sourceBuffer.Size = args.Source.size();
+        sourceBuffer.Encoding = DXC_CP_UTF8;
 
         bool hasRaytracing = Application::GetSystem<RendererSystem>()->GetDevice()->SupportsRaytracing();
 
         // Prepare arguments
         std::vector<LPCWSTR> compileArgs = {};
         std::vector<std::wstring> wideDefines; // Keep strings alive until after compile
+        compileArgs.push_back(widePath);
+        compileArgs.push_back(L"-E");
+        compileArgs.push_back(wideEntry);
+        compileArgs.push_back(L"-T");
+        compileArgs.push_back(wideTarget);
     #if !defined(TRMN_RETAIL)
         compileArgs.push_back(L"-Qembed_debug");
         compileArgs.push_back(L"-Zi");
@@ -121,16 +136,15 @@ namespace Termina {
             compileArgs.push_back(wideDefines.back().c_str());
         }
 
-        if (FAILED(pCompiler->Compile(pSourceBlob, widePath, wideEntry, wideTarget, compileArgs.data(), (uint32)compileArgs.size(), nullptr, 0, pIncludeHandler, &pResult))) {
-            TN_ERROR("Failed to start shader compilation!");
+        HRESULT hresult = pCompiler->Compile(&sourceBuffer, compileArgs.data(), (uint32)compileArgs.size(), pIncludeHandler.Get(), IID_PPV_ARGS(pResult.GetAddressOf()));
+        if (FAILED(hresult)) {
+            TN_ERROR("Failed to start shader compilation: %08X", hresult);
             return result;
         }
 
-        // Get error buffer
-        if (SUCCEEDED(pResult->GetErrorBuffer(&pErrors)) && pErrors && pErrors->GetBufferSize() > 0) {
-            if (SUCCEEDED(pErrors->QueryInterface(IID_PPV_ARGS(&pErrorsU8))) && pErrorsU8) {
-                TN_ERROR("Shader errors: %s", (char*)pErrorsU8->GetStringPointer());
-            }
+        // Get errors
+        if (SUCCEEDED(pResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(pErrorsU8.GetAddressOf()), nullptr)) && pErrorsU8 && pErrorsU8->GetStringLength() > 0) {
+            TN_ERROR("Shader errors: %s", pErrorsU8->GetStringPointer());
         }
 
         // Check compilation status
@@ -141,7 +155,7 @@ namespace Termina {
         }
 
         // Get result blob
-        if (FAILED(pResult->GetResult(&pShaderBlob)) || !pShaderBlob) {
+        if (FAILED(pResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(pShaderBlob.GetAddressOf()), nullptr)) || !pShaderBlob) {
             TN_ERROR("Shader compilation succeeded but no shader blob was produced!");
             return result;
         }
@@ -157,15 +171,6 @@ namespace Termina {
             // Mostly used for converting DXIL to Metal library
             result.Bytecode = args.PostProcessCallback(result.Bytecode, result.EntryPoint);
         }
-
-        if (pShaderBlob) pShaderBlob->Release();
-        if (pErrorsU8) pErrorsU8->Release();
-        if (pErrors) pErrors->Release();
-        if (pResult) pResult->Release();
-        if (pSourceBlob) pSourceBlob->Release();
-        if (pIncludeHandler) pIncludeHandler->Release();
-        if (pCompiler) pCompiler->Release();
-        if (pUtils) pUtils->Release();
 
         return result;
     }

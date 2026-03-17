@@ -7,20 +7,23 @@
 
 namespace Termina {
 
-    /// Raytraced hard shadow pass.
-    /// Runs after GBuffer, outputs R8_UNORM shadow mask (1=lit, 0=shadowed).
+    /// Directional shadow pass.
+    /// Supports Raytraced hard shadows or Cascaded Shadow Mapping (CSM).
+    /// Runs after GBuffer, outputs R8Reg_UNORM shadow mask (1=lit, 0=shadowed).
     /// Sampled by DeferredPass for directional light evaluation.
-    /// No-ops gracefully on devices that don't support raytracing.
-    class RTShadowPass : public RenderPass
+    class ShadowPass : public RenderPass
     {
     public:
-        RTShadowPass();
-        ~RTShadowPass() override;
+        ShadowPass();
+        ~ShadowPass() override;
 
         void Resize(int32 width, int32 height) override;
         void Execute(RenderPassExecuteInfo& info) override;
 
     private:
+        void ExecuteRTShadow(RenderPassExecuteInfo& info);
+        void ExecuteCSMShadow(RenderPassExecuteInfo& info);
+
         static constexpr uint32 MAX_TLAS_INSTANCES = 4096;
 
         RendererTexture* m_ShadowMask  = nullptr; // R8_UNORM, SHADER_WRITE | SHADER_READ

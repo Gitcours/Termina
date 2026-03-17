@@ -36,6 +36,9 @@ namespace Termina {
         static void EndMenu();
         static bool MenuItem(const char* label, const char* shortcut = nullptr, bool selected = false, bool enabled = true);
 
+        static void SetDarkTheme(bool dark);
+        static bool IsDarkTheme();
+
         // Drag and drop — assets (path-based)
         static void AssetPickerSource(const std::string& path);
         /// Renders a drop-target button for a prefab (.trp) asset. Returns true if the path changed.
@@ -63,8 +66,10 @@ namespace Termina {
 
         static struct Data {
             ImFont* RegularFont;
+            ImFont* DarkRegularFont;
             ImFont* CapitalFont;
             int StylizedDepth = 0;
+            bool IsDark = true;
         } sData;
     };
 }

@@ -129,9 +129,9 @@ void ViewportPanel::OnImGuiRender()
                     scale.y = glm::max(glm::abs(scale.y), minScale) * glm::sign(scale.y);
                     scale.z = glm::max(glm::abs(scale.z), minScale) * glm::sign(scale.z);
 
-                    transform.SetLocalPosition(position);
-                    transform.SetLocalRotation(rotation);
-                    transform.SetLocalScale(scale);
+                    transform.SetPosition(position);
+                    transform.SetRotation(rotation);
+                    transform.SetScale(scale);
                 }
             }
             // Draw camera frustum when a camera entity is selected in editor mode.
